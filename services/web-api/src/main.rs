@@ -4,8 +4,6 @@ mod metrics;
 mod models;
 mod repository;
 
-use crate::metrics::middleware::MetricsMiddleware;
-
 use anyhow::Result;
 use axum::{Router, http::HeaderValue};
 use config::Config;
@@ -15,7 +13,7 @@ use tower_http::cors::CorsLayer;
 use tracing::{error, info};
 use tracing_subscriber::{EnvFilter, layer::SubscriberExt, util::SubscriberInitExt};
 
-use opentelemetry::{Key, KeyValue, global, trace::TracerProvider};
+use opentelemetry::{KeyValue, global, trace::TracerProvider};
 use opentelemetry_otlp::WithExportConfig;
 use opentelemetry_sdk::{
     Resource,
@@ -32,7 +30,6 @@ use opentelemetry_semantic_conventions::{
 };
 use std::io::Error;
 use tonic::metadata::*;
-use tracing_core::Level;
 use tracing_opentelemetry::{MetricsLayer, OpenTelemetryLayer};
 
 #[tokio::main]
@@ -50,12 +47,8 @@ async fn main() -> Result<()> {
     info!("Web-API Service starting...");
     info!("========================================");
 
-    foo().await;
-    info!("foo executed...");
-
     info!("Port: {}", config.port);
     info!("Environment: {}", config.environment);
-    info!("db url: {}", config.database_url);
 
     // 4. Инициализация БД
     info!("Connecting to database...");
@@ -125,8 +118,8 @@ async fn main() -> Result<()> {
 
 fn init_telemetry(config: &Config) -> Result<OtelGuard> {
     // Инициализируем метрики и трейсы один раз
-    let meter_provider = init_meter_provider();
-    let tracer = init_tracer();
+    let meter_provider = init_meter_provider(config);
+    let tracer = init_tracer(config);
 
     let env_filter = EnvFilter::try_from_default_env()
         .unwrap_or_else(|_| EnvFilter::new("web_api=info,tower_http=info,info"));
@@ -154,14 +147,8 @@ fn resource() -> Resource {
     )
 }
 
-fn otl_metadata() -> Result<MetadataMap, Error> {
-    let otel_email =
-        std::env::var("ZO_ROOT_USER_EMAIL").unwrap_or_else(|_| "admin@example.com".to_string());
-
-    let otel_password =
-        std::env::var("ZO_ROOT_USER_PASSWORD").unwrap_or_else(|_| "admin123".to_string());
-
-    let auth_string = format!("{}:{}", otel_email, otel_password);
+fn otl_metadata(config: &Config) -> Result<MetadataMap, Error> {
+    let auth_string = format!("{}:{}", config.otel_user, config.otel_password);
     let base64_token = base64::encode(auth_string.clone());
 
     info!("auth_string1 {}", auth_string.clone());
@@ -175,17 +162,15 @@ fn otl_metadata() -> Result<MetadataMap, Error> {
     Ok(map)
 }
 
-fn init_meter_provider() -> SdkMeterProvider {
-    let endpoint =
-        std::env::var("OTEL_ENDPOINT").unwrap_or_else(|_| "http://openobserve:5081".to_string());
-
-    info!("TRACE endpoint {}", endpoint);
+fn init_meter_provider(config: &Config) -> SdkMeterProvider {
+    let endpoint = config.otel_endpoint.as_str();
+    info!("init_meter_provider endpoint {}", endpoint);
 
     let exporter = opentelemetry_otlp::new_exporter()
         .tonic()
         .with_endpoint(endpoint)
         .with_protocol(opentelemetry_otlp::Protocol::Grpc)
-        .with_metadata(otl_metadata().unwrap())
+        .with_metadata(otl_metadata(config).unwrap())
         .build_metrics_exporter(
             Box::new(DefaultAggregationSelector::new()),
             Box::new(DefaultTemporalitySelector::new()),
@@ -239,11 +224,10 @@ fn init_meter_provider() -> SdkMeterProvider {
     meter_provider
 }
 
-fn init_tracer() -> Tracer {
-    let endpoint =
-        std::env::var("OTEL_ENDPOINT").unwrap_or_else(|_| "http://localhost:5081".to_string());
+fn init_tracer(config: &Config) -> Tracer {
+    let endpoint = config.otel_endpoint.as_str();
 
-    info!("TRACE endpoint {}", endpoint);
+    info!("init_tracer endpoint {}", endpoint);
 
     let provider = opentelemetry_otlp::new_pipeline()
         .tracing()
@@ -262,30 +246,12 @@ fn init_tracer() -> Tracer {
             opentelemetry_otlp::new_exporter()
                 .tonic()
                 .with_endpoint(endpoint)
-                .with_metadata(otl_metadata().unwrap()),
+                .with_metadata(otl_metadata(config).unwrap()),
         )
         .install_batch(runtime::Tokio)
         .unwrap();
     global::set_tracer_provider(provider.clone());
     provider.tracer("tracing-otel-subscriber")
-}
-
-fn init_tracing_subscriber() -> OtelGuard {
-    let env_filter = EnvFilter::try_from_default_env()
-        .unwrap_or_else(|_| EnvFilter::new("web_api=info,tower_http=info,info"));
-
-    let meter_provider = init_meter_provider();
-    let tracer = init_tracer();
-
-    let otel_log_layer = tracing_opentelemetry::OpenTelemetryLayer::new(tracer);
-
-    tracing_subscriber::registry()
-        .with(env_filter)
-        .with(tracing_subscriber::fmt::layer().json())
-        .with(otel_log_layer)
-        .with(MetricsLayer::new(meter_provider.clone()))
-        .init();
-    OtelGuard { meter_provider }
 }
 
 struct OtelGuard {
@@ -298,15 +264,4 @@ impl Drop for OtelGuard {
         }
         opentelemetry::global::shutdown_tracer_provider();
     }
-}
-
-#[tracing::instrument]
-async fn foo() {
-    tracing::info!(
-        monotonic_counter.foo = 1_u64,
-        key_1 = "bar",
-        key_2 = 10,
-        "handle foo",
-    );
-    tracing::info!(histogram.baz = 10, "histogram example",);
 }

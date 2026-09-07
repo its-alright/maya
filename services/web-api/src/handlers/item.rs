@@ -1,7 +1,7 @@
 use crate::models::item::{CreateItemRequest, ItemResponse, UpdateItemRequest};
 use crate::repository::item_repo::ItemRepository;
 use axum::{
-    extract::{Path, Request, State},
+    extract::{Path, State},
     http::StatusCode,
     response::{IntoResponse, Json},
 };
@@ -12,7 +12,7 @@ use uuid::Uuid;
 pub type AppState = Arc<ItemRepository>;
 
 pub fn item_routes(state: AppState) -> axum::Router {
-    use axum::routing::{delete, get, post, put};
+    use axum::routing::{get, post};
 
     axum::Router::new()
         .route("/", post(create_item).get(list_items))
@@ -43,9 +43,7 @@ pub async fn create_item(
 }
 
 #[tracing::instrument(skip(repo))]
-pub async fn list_items(
-    State(repo): State<AppState>,
-) -> impl IntoResponse {
+pub async fn list_items(State(repo): State<AppState>) -> impl IntoResponse {
     info!("Listing items");
 
     match repo.list_items(100, 0).await {
