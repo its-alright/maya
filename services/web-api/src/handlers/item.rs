@@ -1,18 +1,18 @@
 use crate::models::item::{CreateItemRequest, ItemResponse, UpdateItemRequest};
 use crate::repository::item_repo::ItemRepository;
 use axum::{
-    extract::{Path, State},
+    extract::{Path, Request, State},
     http::StatusCode,
     response::{IntoResponse, Json},
 };
 use std::sync::Arc;
-use tracing::{info, error};
+use tracing::{error, info};
 use uuid::Uuid;
 
 pub type AppState = Arc<ItemRepository>;
 
 pub fn item_routes(state: AppState) -> axum::Router {
-    use axum::routing::{get, post, put, delete};
+    use axum::routing::{delete, get, post, put};
 
     axum::Router::new()
         .route("/", post(create_item).get(list_items))
@@ -36,7 +36,8 @@ pub async fn create_item(
             (
                 StatusCode::INTERNAL_SERVER_ERROR,
                 Json(serde_json::json!({ "error": "Failed to create item" })),
-            ).into_response()
+            )
+                .into_response()
         }
     }
 }
@@ -58,15 +59,13 @@ pub async fn list_items(
             (
                 StatusCode::INTERNAL_SERVER_ERROR,
                 Json(serde_json::json!({ "error": "Failed to list items" })),
-            ).into_response()
+            )
+                .into_response()
         }
     }
 }
 
-pub async fn get_item(
-    State(repo): State<AppState>,
-    Path(id): Path<String>,
-) -> impl IntoResponse {
+pub async fn get_item(State(repo): State<AppState>, Path(id): Path<String>) -> impl IntoResponse {
     info!("Getting item: id={}", id);
 
     let uuid = match Uuid::parse_str(&id) {
@@ -76,7 +75,8 @@ pub async fn get_item(
             return (
                 StatusCode::BAD_REQUEST,
                 Json(serde_json::json!({ "error": "Invalid ID format" })),
-            ).into_response();
+            )
+                .into_response();
         }
     };
 
@@ -90,14 +90,16 @@ pub async fn get_item(
             (
                 StatusCode::NOT_FOUND,
                 Json(serde_json::json!({ "error": "Item not found" })),
-            ).into_response()
+            )
+                .into_response()
         }
         Err(e) => {
             error!("Database error: {}", e);
             (
                 StatusCode::INTERNAL_SERVER_ERROR,
                 Json(serde_json::json!({ "error": "Database error" })),
-            ).into_response()
+            )
+                .into_response()
         }
     }
 }
@@ -116,7 +118,8 @@ pub async fn update_item(
             return (
                 StatusCode::BAD_REQUEST,
                 Json(serde_json::json!({ "error": "Invalid ID format" })),
-            ).into_response();
+            )
+                .into_response();
         }
     };
 
@@ -130,14 +133,16 @@ pub async fn update_item(
             (
                 StatusCode::NOT_FOUND,
                 Json(serde_json::json!({ "error": "Item not found" })),
-            ).into_response()
+            )
+                .into_response()
         }
         Err(e) => {
             error!("Failed to update item: {}", e);
             (
                 StatusCode::INTERNAL_SERVER_ERROR,
                 Json(serde_json::json!({ "error": "Failed to update item" })),
-            ).into_response()
+            )
+                .into_response()
         }
     }
 }
@@ -155,27 +160,28 @@ pub async fn delete_item(
             return (
                 StatusCode::BAD_REQUEST,
                 Json(serde_json::json!({ "error": "Invalid ID format" })),
-            ).into_response();
+            )
+                .into_response();
         }
     };
 
     match repo.delete_item(&uuid).await {
-        Ok(true) => {
-            (StatusCode::NO_CONTENT, Json(serde_json::json!({}))).into_response()
-        }
+        Ok(true) => (StatusCode::NO_CONTENT, Json(serde_json::json!({}))).into_response(),
         Ok(false) => {
             error!("Item not found: {}", id);
             (
                 StatusCode::NOT_FOUND,
                 Json(serde_json::json!({ "error": "Item not found" })),
-            ).into_response()
+            )
+                .into_response()
         }
         Err(e) => {
             error!("Failed to delete item: {}", e);
             (
                 StatusCode::INTERNAL_SERVER_ERROR,
                 Json(serde_json::json!({ "error": "Failed to delete item" })),
-            ).into_response()
+            )
+                .into_response()
         }
     }
 }

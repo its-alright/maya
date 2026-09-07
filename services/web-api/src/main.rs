@@ -1,8 +1,8 @@
 mod config;
 mod handlers;
+mod metrics;
 mod models;
 mod repository;
-mod metrics;
 
 use crate::metrics::middleware::MetricsMiddleware;
 
@@ -40,32 +40,22 @@ async fn main() -> Result<()> {
     // 1. Загрузка .env
     dotenv().ok();
 
-    // 2. Настройка логирования
-    tracing::info!(
-        monotonic_counter.main = 1_u64,
-        key_1 = "bar",
-        key_2 = 10,
-        "handle foo",
-    );
+    // 2. Загрузка конфигурации
+    let config = Config::from_env()?;
 
-    otl_metadata().expect("failed init otl metadata");
-    init_tracing_subscriber();
-    init_tracer();
-    init_meter_provider();
+    // 3. Инициализация telemetry (ОДИН РАЗ!)
+    let _guard = init_telemetry(&config)?;
 
     info!("========================================");
     info!("Web-API Service starting...");
     info!("========================================");
-    foo().await;
 
+    foo().await;
     info!("foo executed...");
 
-    // 3. Загрузка конфигурации
-    let config = Config::from_env()?;
     info!("Port: {}", config.port);
     info!("Environment: {}", config.environment);
-
-    info!("db url: {}", config.database_url.clone());
+    info!("db url: {}", config.database_url);
 
     // 4. Инициализация БД
     info!("Connecting to database...");
@@ -90,11 +80,20 @@ async fn main() -> Result<()> {
             axum::http::header::CONTENT_TYPE,
         ]);
 
-    // 7. Создаем роутер
+    // 7. Создаем роутер с метриками
+    let metrics_middleware = Arc::new(metrics::middleware::MetricsMiddleware::new());
+
     let app = Router::new()
         .nest("/api/items", handlers::item_routes(repo.clone()))
         .layer(cors)
-        .layer(tower_http::trace::TraceLayer::new_for_http());
+        .layer(tower_http::trace::TraceLayer::new_for_http())
+        .layer(axum::middleware::from_fn({
+            let middleware = metrics_middleware.clone();
+            move |req, next| {
+                let middleware = middleware.clone();
+                async move { middleware.layer(req, next).await }
+            }
+        }));
 
     // 8. Запускаем сервер
     let addr = format!("0.0.0.0:{}", config.port);
@@ -112,7 +111,7 @@ async fn main() -> Result<()> {
             match result {
                 Ok(Ok(_)) => info!("Server stopped normally"),
                 Ok(Err(e)) => error!("Server error: {}", e),
-                 Err(e) => error!("Server task error: {}", e),
+                Err(e) => error!("Server task error: {}", e),
             }
         }
         _ = tokio::signal::ctrl_c() => {
@@ -122,6 +121,26 @@ async fn main() -> Result<()> {
 
     info!("Service stopped");
     Ok(())
+}
+
+fn init_telemetry(config: &Config) -> Result<OtelGuard> {
+    // Инициализируем метрики и трейсы один раз
+    let meter_provider = init_meter_provider();
+    let tracer = init_tracer();
+
+    let env_filter = EnvFilter::try_from_default_env()
+        .unwrap_or_else(|_| EnvFilter::new("web_api=info,tower_http=info,info"));
+
+    let otel_layer = OpenTelemetryLayer::new(tracer);
+
+    tracing_subscriber::registry()
+        .with(env_filter)
+        .with(tracing_subscriber::fmt::layer().json())
+        .with(otel_layer)
+        .with(MetricsLayer::new(meter_provider.clone()))
+        .init();
+
+    Ok(OtelGuard { meter_provider })
 }
 
 fn resource() -> Resource {
@@ -181,39 +200,40 @@ fn init_meter_provider() -> SdkMeterProvider {
         runtime::Tokio,
     )
     .build();
-    // Rename foo metrics to foo_named and drop key_2 attribute
-    let view_foo = |instrument: &Instrument| -> Option<Stream> {
-        if instrument.name == "foo" {
+
+    let view_duration = |instrument: &Instrument| -> Option<Stream> {
+        if instrument.name == "http_request_duration_seconds" {
             Some(
-                Stream::new()
-                    .name("foo_named")
-                    .allowed_attribute_keys([Key::from("key_1")]),
+                Stream::new().aggregation(Aggregation::ExplicitBucketHistogram {
+                    boundaries: vec![
+                        0.0005, // 0.5ms
+                        0.001,  // 1ms
+                        0.002,  // 2ms
+                        0.005,  // 5ms
+                        0.01,   // 10ms
+                        0.025,  // 25ms
+                        0.05,   // 50ms
+                        0.1,    // 100ms
+                        0.25,   // 250ms
+                        0.5,    // 500ms
+                        1.0,    // 1s
+                        2.5,    // 2.5s
+                        5.0,    // 5s
+                        10.0,   // 10s
+                    ],
+                    record_min_max: true,
+                }),
             )
         } else {
             None
         }
     };
-    // Set Custom histogram boundaries for baz metrics
-    let view_baz = |instrument: &Instrument| -> Option<Stream> {
-        if instrument.name == "baz" {
-            Some(
-                Stream::new()
-                    .name("baz")
-                    .aggregation(Aggregation::ExplicitBucketHistogram {
-                        boundaries: vec![0.0, 2.0, 4.0, 8.0, 16.0, 32.0, 64.0],
-                        record_min_max: true,
-                    }),
-            )
-        } else {
-            None
-        }
-    };
+
     let meter_provider = MeterProviderBuilder::default()
         .with_resource(resource())
         .with_reader(reader)
         .with_reader(stdout_reader)
-        .with_view(view_foo)
-        .with_view(view_baz)
+        .with_view(view_duration)
         .build();
     global::set_meter_provider(meter_provider.clone());
     meter_provider
