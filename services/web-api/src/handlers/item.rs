@@ -41,6 +41,7 @@ pub async fn create_item(
     }
 }
 
+#[tracing::instrument(skip(repo))]
 pub async fn list_items(
     State(repo): State<AppState>,
 ) -> impl IntoResponse {
@@ -48,6 +49,7 @@ pub async fn list_items(
 
     match repo.list_items(100, 0).await {
         Ok(items) => {
+            info!("items loaded");
             let responses: Vec<ItemResponse> = items.into_iter().map(|item| item.into()).collect();
             (StatusCode::OK, Json(responses)).into_response()
         }

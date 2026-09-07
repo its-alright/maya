@@ -2,6 +2,9 @@ mod config;
 mod handlers;
 mod models;
 mod repository;
+mod metrics;
+
+use crate::metrics::middleware::MetricsMiddleware;
 
 use anyhow::Result;
 use axum::{Router, http::HeaderValue};
@@ -253,15 +256,18 @@ fn init_tracing_subscriber() -> OtelGuard {
 
     let meter_provider = init_meter_provider();
     let tracer = init_tracer();
+
+    let otel_log_layer = tracing_opentelemetry::OpenTelemetryLayer::new(tracer);
+
     tracing_subscriber::registry()
-        .with(tracing_subscriber::fmt::layer().json())
         .with(env_filter)
-        .with(tracing_subscriber::fmt::layer())
+        .with(tracing_subscriber::fmt::layer().json())
+        .with(otel_log_layer)
         .with(MetricsLayer::new(meter_provider.clone()))
-        .with(OpenTelemetryLayer::new(tracer))
         .init();
     OtelGuard { meter_provider }
 }
+
 struct OtelGuard {
     meter_provider: SdkMeterProvider,
 }
