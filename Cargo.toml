@@ -30,15 +30,17 @@ opentelemetry-semantic-conventions = "0.16.0"
 
 # HTTP & Web
 axum = "0.7"
+http = "1.1"
 tower = "0.4"
 tower-http = { version = "0.5", features = ["trace", "auth", "cors", "request-id", "set-header", "limit"] }
 tower_governor = "0.1"
-http = "1.1"
 hyper = { version = "1.4", features = ["server", "http1", "http2"] }
 
 # gRPC
-tonic = "0.12.1"
-prost = "0.12"
+tonic = "0.12.3"
+tonic-build = "0.12.3"
+prost = "0.12.6"
+prost-types = "0.12.6"
 
 # Database
 sqlx = { version = "0.7", features = ["runtime-tokio-rustls", "postgres", "uuid", "chrono", "migrate"] }
@@ -51,3 +53,5 @@ rand = "0.8"
 # Utils
 uuid = { version = "1.10", features = ["v7", "serde"] }
 chrono = { version = "0.4", features = ["serde"] }
+
+base64 = "0.22.1"

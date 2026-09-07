@@ -8,6 +8,7 @@ pub struct Config {
     pub database_url: String,
     pub otel_endpoint: String,
     pub jwt_secret: String,
+    pub cors_origin: String,
 }
 
 impl Config {
@@ -19,10 +20,12 @@ impl Config {
             environment: std::env::var("ENVIRONMENT").unwrap_or_else(|_| "development".to_string()),
             database_url: std::env::var("DATABASE_URL")
                 .map_err(|_| anyhow::anyhow!("DATABASE_URL must be set"))?,
+            // ВАЖНО: используем имя сервиса в Docker, а не localhost!
             otel_endpoint: std::env::var("OTEL_ENDPOINT")
-                .unwrap_or_else(|_| "http://openobserve:5080".to_string()),
+                .unwrap_or_else(|_| "http://openobserve:5081".to_string()),
             jwt_secret: std::env::var("JWT_SECRET")
                 .map_err(|_| anyhow::anyhow!("JWT_SECRET must be set"))?,
+            cors_origin: std::env::var("CORS_ORIGIN").unwrap_or_else(|_| "*".to_string()),
         })
     }
 }

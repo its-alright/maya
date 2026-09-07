@@ -1,20 +1,21 @@
-version: '3.8'
-
 services:
   postgres:
-    image: postgres:18-alpine
-    container_name: microservices-postgres
+    image: postgres:18
+    container_name: postgres
+    restart: always
     environment:
-      POSTGRES_USER: microservices
-      POSTGRES_PASSWORD: microservices123
-      POSTGRES_DB: microservices
+      POSTGRES_USER: ${POSTGRES_USER:-user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
+      POSTGRES_DB: ${POSTGRES_DB:-database}
+      POSTGRES_INITDB_ARGS: "--data-checksums"
     ports:
       - "5432:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
-      - ./scripts/init_db.sql:/docker-entrypoint-initdb.d/init.sql
+      - maya_postgres_data:/var/lib/postgresql
+    #  - ./scripts/init_db.sql:/docker-entrypoint-initdb.d/init.sql
+    shm_size: 128mb
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U microservices"]
+      test: ["CMD-SHELL", "pg_isready -U maya"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -23,68 +24,18 @@ services:
 
   openobserve:
     image: public.ecr.aws/zinclabs/openobserve:latest
-    container_name: microservices-openobserve
+    container_name: openobserve
     environment:
-      ZO_ROOT_USER_EMAIL: "admin@example.com"
-      ZO_ROOT_USER_PASSWORD: "admin123"
+      ZO_ROOT_USER_EMAIL: ${ZO_ROOT_USER_EMAIL:-admin@example.com}
+      ZO_ROOT_USER_PASSWORD: ${ZO_ROOT_USER_PASSWORD:-admin123}
       ZO_MEMORY_CACHE_SIZE: "100"
-      ZO_TELEMETRY_ENABLED: "false"
+      ZO_TELEMETRY_ENABLED: ${ZO_TELEMETRY_ENABLED:-false}
     ports:
       - "5080:5080"
       - "5081:5081"
+      - "5082:5082"
     volumes:
       - openobserve_data:/data
-    networks:
-      - microservices-network
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:5080/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-
-  api-gateway:
-    build:
-      context: .
-      dockerfile: services/api-gateway/Dockerfile
-    container_name: microservices-gateway
-    environment:
-      GATEWAY_PORT: 8080
-      ENVIRONMENT: development
-      CORS_ORIGIN: "*"
-      OTEL_ENDPOINT: http://openobserve:5080
-      JWT_SECRET: ${JWT_SECRET:-change_this_secret_in_production}
-      AUTH_SERVICE_URL: http://auth-service:50051
-      WEB_API_SERVICE_URL: http://web-api:50052
-      RATE_LIMIT_REQUESTS: 100
-      RATE_LIMIT_PERIOD_SECS: 60
-    ports:
-      - "8080:8080"
-    depends_on:
-      - auth-service
-      - web-api
-      - openobserve
-    networks:
-      - microservices-network
-
-  auth-service:
-    build:
-      context: .
-      dockerfile: services/auth-service/Dockerfile
-    container_name: microservices-auth
-    environment:
-      AUTH_PORT: 50051
-      ENVIRONMENT: development
-      DATABASE_URL: postgres://microservices:microservices123@postgres:5432/microservices
-      OTEL_ENDPOINT: http://openobserve:5080
-      JWT_SECRET: ${JWT_SECRET:-change_this_secret_in_production}
-      JWT_EXPIRATION_HOURS: 24
-    ports:
-      - "50051:50051"
-    depends_on:
-      postgres:
-        condition: service_healthy
-      openobserve:
-        condition: service_healthy
     networks:
       - microservices-network
 
@@ -92,25 +43,22 @@ services:
     build:
       context: .
       dockerfile: services/web-api/Dockerfile
-    container_name: microservices-webapi
+    env_file:
+      - .env
+    container_name: webapi
     environment:
       WEB_API_PORT: 50052
       ENVIRONMENT: development
-      DATABASE_URL: postgres://microservices:microservices123@postgres:5432/microservices
-      OTEL_ENDPOINT: http://openobserve:5080
+      DATABASE_URL: ${DATABASE_URL:-postgres://dbhost:dbuser@postgres:5432/dbname}
+      OTEL_ENDPOINT: ${OTEL_ENDPOINT:-http://localhost:5081}
       JWT_SECRET: ${JWT_SECRET:-change_this_secret_in_production}
     ports:
       - "50052:50052"
-    depends_on:
-      postgres:
-        condition: service_healthy
-      openobserve:
-        condition: service_healthy
     networks:
       - microservices-network
 
 volumes:
-  postgres_data:
+  maya_postgres_data:
     driver: local
   openobserve_data:
     driver: local

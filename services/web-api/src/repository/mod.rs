@@ -11,6 +11,7 @@ pub async fn create_pool(database_url: &str) -> Result<PgPool> {
 }
 
 pub async fn run_migrations(pool: &PgPool) -> Result<()> {
+    // Разделяем CREATE TABLE и CREATE INDEX на отдельные запросы
     sqlx::query(
         r#"
         CREATE TABLE IF NOT EXISTS items (
@@ -18,8 +19,15 @@ pub async fn run_migrations(pool: &PgPool) -> Result<()> {
             name TEXT NOT NULL,
             created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
             updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
-        );
-        CREATE INDEX IF NOT EXISTS idx_items_name ON items(name);
+        )
+        "#
+    )
+        .execute(pool)
+        .await?;
+
+    sqlx::query(
+        r#"
+        CREATE INDEX IF NOT EXISTS idx_items_name ON items(name)
         "#
     )
         .execute(pool)

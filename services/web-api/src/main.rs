@@ -1,9 +1,17 @@
 mod config;
-mod grpc;
+mod handlers;
 mod models;
 mod repository;
 
+use anyhow::Result;
+use axum::{Router, http::HeaderValue};
+use config::Config;
 use dotenvy::dotenv;
+use std::sync::Arc;
+use tower_http::cors::CorsLayer;
+use tracing::{error, info};
+use tracing_subscriber::{EnvFilter, layer::SubscriberExt, util::SubscriberInitExt};
+
 use opentelemetry::{Key, KeyValue, global, trace::TracerProvider};
 use opentelemetry_otlp::WithExportConfig;
 use opentelemetry_sdk::{
@@ -21,11 +29,98 @@ use opentelemetry_semantic_conventions::{
 };
 use std::io::Error;
 use tonic::metadata::*;
-use tracing::info;
 use tracing_core::Level;
 use tracing_opentelemetry::{MetricsLayer, OpenTelemetryLayer};
-use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
-// Create a Resource that captures information about the entity for which telemetry is recorded.
+
+#[tokio::main]
+async fn main() -> Result<()> {
+    // 1. Загрузка .env
+    dotenv().ok();
+
+    // 2. Настройка логирования
+    tracing::info!(
+        monotonic_counter.main = 1_u64,
+        key_1 = "bar",
+        key_2 = 10,
+        "handle foo",
+    );
+
+    otl_metadata().expect("failed init otl metadata");
+    init_tracing_subscriber();
+    init_tracer();
+    init_meter_provider();
+
+    info!("========================================");
+    info!("Web-API Service starting...");
+    info!("========================================");
+    foo().await;
+
+    info!("foo executed...");
+
+    // 3. Загрузка конфигурации
+    let config = Config::from_env()?;
+    info!("Port: {}", config.port);
+    info!("Environment: {}", config.environment);
+
+    info!("db url: {}", config.database_url.clone());
+
+    // 4. Инициализация БД
+    info!("Connecting to database...");
+    let pool = repository::create_pool(&config.database_url).await?;
+    repository::run_migrations(&pool).await?;
+    info!("Database initialized successfully");
+
+    // 5. Создаем репозиторий
+    let repo = Arc::new(repository::item_repo::ItemRepository::new(pool));
+
+    // 6. CORS настройки
+    let cors = CorsLayer::new()
+        .allow_origin(config.cors_origin.parse::<HeaderValue>()?)
+        .allow_methods([
+            axum::http::Method::GET,
+            axum::http::Method::POST,
+            axum::http::Method::PUT,
+            axum::http::Method::DELETE,
+        ])
+        .allow_headers(vec![
+            axum::http::header::AUTHORIZATION,
+            axum::http::header::CONTENT_TYPE,
+        ]);
+
+    // 7. Создаем роутер
+    let app = Router::new()
+        .nest("/api/items", handlers::item_routes(repo.clone()))
+        .layer(cors)
+        .layer(tower_http::trace::TraceLayer::new_for_http());
+
+    // 8. Запускаем сервер
+    let addr = format!("0.0.0.0:{}", config.port);
+    info!("Web API HTTP server listening on http://{}", addr);
+    info!("Press Ctrl+C to stop");
+
+    let listener = tokio::net::TcpListener::bind(&addr).await?;
+
+    // Запускаем сервер в отдельной задаче
+    let server_task = tokio::spawn(async { axum::serve(listener, app).await });
+
+    // Ожидаем сигнал завершения
+    tokio::select! {
+        result = server_task => {
+            match result {
+                Ok(Ok(_)) => info!("Server stopped normally"),
+                Ok(Err(e)) => error!("Server error: {}", e),
+                 Err(e) => error!("Server task error: {}", e),
+            }
+        }
+        _ = tokio::signal::ctrl_c() => {
+            info!("Shutdown signal received, stopping...");
+        }
+    }
+
+    info!("Service stopped");
+    Ok(())
+}
+
 fn resource() -> Resource {
     Resource::from_schema_url(
         [
@@ -36,24 +131,37 @@ fn resource() -> Resource {
         SCHEMA_URL,
     )
 }
-// Create the required Metadata headers for OpenObserve
+
 fn otl_metadata() -> Result<MetadataMap, Error> {
+    let otel_email =
+        std::env::var("ZO_ROOT_USER_EMAIL").unwrap_or_else(|_| "admin@example.com".to_string());
+
+    let otel_password =
+        std::env::var("ZO_ROOT_USER_PASSWORD").unwrap_or_else(|_| "admin123".to_string());
+
+    let auth_string = format!("{}:{}", otel_email, otel_password);
+    let base64_token = base64::encode(auth_string.clone());
+
+    info!("auth_string1 {}", auth_string.clone());
+    info!("base64_token1 {}", base64_token.clone());
+    let auth_header_value = format!("basic {}", base64_token.clone());
+
     let mut map = MetadataMap::with_capacity(3);
-    map.insert(
-        "authorization",
-        format!("Basic cm9vdEBleGFtcGxlLmNvbTo3a2xCT052cHhTd09DZ09u") // This is picked from the Ingestion tab openobserve
-            .parse()
-            .unwrap(),
-    );
+    map.insert("authorization", auth_header_value.parse().unwrap());
     map.insert("organization", "default".parse().unwrap());
     map.insert("stream-name", "default".parse().unwrap());
     Ok(map)
 }
-// Construct MeterProvider for MetricsLayer
+
 fn init_meter_provider() -> SdkMeterProvider {
+    let endpoint =
+        std::env::var("OTEL_ENDPOINT").unwrap_or_else(|_| "http://openobserve:5081".to_string());
+
+    info!("TRACE endpoint {}", endpoint);
+
     let exporter = opentelemetry_otlp::new_exporter()
         .tonic()
-        .with_endpoint("http://localhost:5081/api/development")
+        .with_endpoint(endpoint)
         .with_protocol(opentelemetry_otlp::Protocol::Grpc)
         .with_metadata(otl_metadata().unwrap())
         .build_metrics_exporter(
@@ -107,8 +215,13 @@ fn init_meter_provider() -> SdkMeterProvider {
     global::set_meter_provider(meter_provider.clone());
     meter_provider
 }
-// Construct Tracer for OpenTelemetryLayer
+
 fn init_tracer() -> Tracer {
+    let endpoint =
+        std::env::var("OTEL_ENDPOINT").unwrap_or_else(|_| "http://localhost:5081".to_string());
+
+    info!("TRACE endpoint {}", endpoint);
+
     let provider = opentelemetry_otlp::new_pipeline()
         .tracing()
         .with_trace_config(
@@ -125,7 +238,7 @@ fn init_tracer() -> Tracer {
         .with_exporter(
             opentelemetry_otlp::new_exporter()
                 .tonic()
-                .with_endpoint("http://localhost:5081/api/development")
+                .with_endpoint(endpoint)
                 .with_metadata(otl_metadata().unwrap()),
         )
         .install_batch(runtime::Tokio)
@@ -133,14 +246,16 @@ fn init_tracer() -> Tracer {
     global::set_tracer_provider(provider.clone());
     provider.tracer("tracing-otel-subscriber")
 }
-// Initialize tracing-subscriber and return OtelGuard for opentelemetry-related termination processing
+
 fn init_tracing_subscriber() -> OtelGuard {
+    let env_filter = EnvFilter::try_from_default_env()
+        .unwrap_or_else(|_| EnvFilter::new("web_api=info,tower_http=info,info"));
+
     let meter_provider = init_meter_provider();
     let tracer = init_tracer();
     tracing_subscriber::registry()
-        .with(tracing_subscriber::filter::LevelFilter::from_level(
-            Level::INFO,
-        ))
+        .with(tracing_subscriber::fmt::layer().json())
+        .with(env_filter)
         .with(tracing_subscriber::fmt::layer())
         .with(MetricsLayer::new(meter_provider.clone()))
         .with(OpenTelemetryLayer::new(tracer))
@@ -168,30 +283,4 @@ async fn foo() {
         "handle foo",
     );
     tracing::info!(histogram.baz = 10, "histogram example",);
-}
-
-#[tokio::main]
-async fn main() -> Result<(), anyhow::Error> {
-    tracing::info!(
-        monotonic_counter.main = 1_u64,
-        key_1 = "bar",
-        key_2 = 10,
-        "handle foo",
-    );
-
-    foo().await;
-
-    dotenv().ok();
-    let config = config::Config::from_env()?;
-
-    info!("Starting Web API Service on port {}", config.port);
-
-    // Инициализация БД
-    let pool = repository::create_pool(&config.database_url).await?;
-    repository::run_migrations(&pool).await?;
-
-    // Запуск gRPC сервера
-    grpc::server::run_server(config, pool).await?;
-
-    Ok(())
 }

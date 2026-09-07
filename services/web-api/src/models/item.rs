@@ -20,3 +20,23 @@ pub struct CreateItemRequest {
 pub struct UpdateItemRequest {
     pub name: String,
 }
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct ItemResponse {
+    pub id: String,
+    pub name: String,
+    pub created_at: String,
+    pub updated_at: String,
+}
+
+// Конвертация Item в ItemResponse
+impl From<Item> for ItemResponse {
+    fn from(item: Item) -> Self {
+        Self {
+            id: item.id.to_string(),
+            name: item.name,
+            created_at: item.created_at.to_rfc3339(),
+            updated_at: item.updated_at.to_rfc3339(),
+        }
+    }
+}
