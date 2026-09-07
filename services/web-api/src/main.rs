@@ -34,7 +34,8 @@ use tracing_opentelemetry::{MetricsLayer, OpenTelemetryLayer};
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    // 1. Загрузка .env
+    // 1. Загрузка .env / .env.local
+    dotenvy::from_filename(".env.local").ok();
     dotenv().ok();
 
     // 2. Загрузка конфигурации

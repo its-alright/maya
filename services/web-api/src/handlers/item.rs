@@ -6,6 +6,8 @@ use axum::{
     response::{IntoResponse, Json},
 };
 use std::sync::Arc;
+use std::thread::sleep;
+use std::time::Duration;
 use tracing::{error, info};
 use uuid::Uuid;
 
@@ -42,9 +44,26 @@ pub async fn create_item(
     }
 }
 
+#[tracing::instrument]
+fn level_1() {
+    info!("Level 1 - starting");
+    sleep(Duration::from_millis(100)); // 100ms задержка
+    level_2();
+    info!("Level 1 - done");
+}
+
+#[tracing::instrument]
+fn level_2() {
+    info!("Level 2 - starting");
+    sleep(Duration::from_millis(200)); // 200ms задержка
+    info!("Level 2 - done");
+}
+
 #[tracing::instrument(skip(repo))]
 pub async fn list_items(State(repo): State<AppState>) -> impl IntoResponse {
     info!("Listing items");
+
+    level_1();
 
     match repo.list_items(100, 0).await {
         Ok(items) => {

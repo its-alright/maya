@@ -1,5 +1,6 @@
 use sqlx::PgPool;
 use anyhow::Result;
+use tracing::info;
 use uuid::Uuid;
 use crate::models::item::Item;
 
@@ -42,7 +43,9 @@ impl ItemRepository {
         Ok(item)
     }
 
+    #[tracing::instrument(skip(self))]
     pub async fn list_items(&self, limit: i64, offset: i64) -> Result<Vec<Item>> {
+        info!("start loading items");
         let items = sqlx::query_as::<_, Item>(
             r#"
             SELECT id, name, created_at, updated_at
@@ -55,6 +58,8 @@ impl ItemRepository {
             .bind(offset)
             .fetch_all(&self.pool)
             .await?;
+
+        info!("end loading items");
 
         Ok(items)
     }
