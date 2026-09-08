@@ -44,7 +44,7 @@ impl ItemRepository {
     }
 
     #[tracing::instrument(skip(self))]
-    pub async fn list_items(&self, limit: i64, offset: i64) -> Result<Vec<Item>> {
+    pub async fn list_items_repofn(&self, limit: i64, offset: i64) -> Result<Vec<Item>> {
         info!("start loading items");
         let items = sqlx::query_as::<_, Item>(
             r#"
