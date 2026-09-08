@@ -9,6 +9,7 @@ COPY services/web-api/Cargo.toml ./services/web-api/
 COPY services/api-gateway/Cargo.toml ./services/api-gateway/
 COPY services/auth-service/Cargo.toml ./services/auth-service/
 
+
 # Создаем заглушки
 RUN mkdir -p services/web-api/src && \
     echo "fn main() {}" > services/web-api/src/main.rs && \
@@ -20,8 +21,9 @@ RUN mkdir -p services/web-api/src && \
 # Собираем с --locked для точных версий
 RUN cargo build --release -p web-api --locked
 
-# Копируем реальный код
+# src + migrations
 COPY services/web-api/src ./services/web-api/src
+COPY services/web-api/migrations ./services/web-api/migrations
 
 # Пересобираем
 RUN cargo build --release -p web-api --locked

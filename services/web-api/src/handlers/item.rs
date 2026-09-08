@@ -6,8 +6,6 @@ use axum::{
     response::{IntoResponse, Json},
 };
 use std::sync::Arc;
-use std::thread::sleep;
-use std::time::Duration;
 use tracing::{error, info};
 use uuid::Uuid;
 

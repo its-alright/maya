@@ -9,29 +9,3 @@ pub async fn create_pool(database_url: &str) -> Result<PgPool> {
         .connect(database_url)
         .await?)
 }
-
-pub async fn run_migrations(pool: &PgPool) -> Result<()> {
-    // Разделяем CREATE TABLE и CREATE INDEX на отдельные запросы
-    sqlx::query(
-        r#"
-        CREATE TABLE IF NOT EXISTS items (
-            id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-            name TEXT NOT NULL,
-            created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-            updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
-        )
-        "#
-    )
-        .execute(pool)
-        .await?;
-
-    sqlx::query(
-        r#"
-        CREATE INDEX IF NOT EXISTS idx_items_name ON items(name)
-        "#
-    )
-        .execute(pool)
-        .await?;
-
-    Ok(())
-}

@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 mod config;
 mod handlers;
 mod metrics;
@@ -44,17 +46,22 @@ async fn main() -> Result<()> {
     // 3. Инициализация telemetry (ОДИН РАЗ!)
     let _guard = init_telemetry(&config)?;
 
-    info!("========================================");
-    info!("Web-API Service starting...");
-    info!("========================================");
-
-    info!("Port: {}", config.port);
-    info!("Environment: {}", config.environment);
+    info!(
+        "Web-API Service starting, Port: {}, Environment: {}",
+        config.port, config.environment
+    );
 
     // 4. Инициализация БД
-    info!("Connecting to database...");
+    info!("Connecting to database");
     let pool = repository::create_pool(&config.database_url).await?;
-    repository::run_migrations(&pool).await?;
+
+    info!("Run migrations");
+
+    sqlx::migrate!()
+        .run(&pool)
+        .await
+        .expect("Failed to run migrations for service-a");
+
     info!("Database initialized successfully");
 
     // 5. Создаем репозиторий
