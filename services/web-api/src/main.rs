@@ -3,6 +3,7 @@
 mod config;
 mod handlers;
 mod metrics;
+mod middleware;
 mod models;
 mod repository;
 
@@ -36,6 +37,11 @@ use tracing_opentelemetry::{MetricsLayer, OpenTelemetryLayer};
 
 #[tokio::main]
 async fn main() -> Result<()> {
+    use std::io::Write;
+    std::io::stderr()
+        .write_all(b"!!! WEB-API MAIN ENTERED !!!\n")?;
+    std::io::stderr().flush()?;
+
     println!("web-api start");
     // 1. Загрузка .env / .env.local
     //dotenvy::from_filename(".env.local").ok();
@@ -44,8 +50,20 @@ async fn main() -> Result<()> {
     // 2. Загрузка конфигурации
     let config = Config::from_env()?;
 
-    // 3. Инициализация telemetry (ОДИН РАЗ!)
-    let _guard = init_telemetry(&config)?;
+    // 3. Инициализация telemetry
+    let _guard = match init_telemetry(&config) {
+        Ok(guard) => guard,
+        Err(e) => {
+            panic!("Failed to init telemetry: {}", e);
+            // Продолжаем без telemetry
+            tracing_subscriber::fmt()
+                .json()
+                .with_env_filter(EnvFilter::from_default_env())
+                .init();
+            info!("Running without OpenTelemetry");
+            return Ok(());
+        }
+    };
 
     info!(
         "Web-API Service starting, Port: {}, Environment: {}",
@@ -87,6 +105,10 @@ async fn main() -> Result<()> {
 
     let app = Router::new()
         .nest("/api/items", handlers::item_routes(repo.clone()))
+        .layer(axum::middleware::from_fn(move |req, next| {
+            middleware::extract_trace_context(req, next)
+        }))
+        //.layer(axum::middleware::from_fn(middleware::extract_trace_context()))
         .layer(cors)
         .layer(tower_http::trace::TraceLayer::new_for_http())
         .layer(axum::middleware::from_fn({
@@ -160,8 +182,6 @@ fn otl_metadata(config: &Config) -> Result<MetadataMap, Error> {
     let auth_string = format!("{}:{}", config.otel_user, config.otel_password);
     let base64_token = base64::encode(auth_string.clone());
 
-    info!("auth_string1 {}", auth_string.clone());
-    info!("base64_token1 {}", base64_token.clone());
     let auth_header_value = format!("basic {}", base64_token.clone());
 
     let mut map = MetadataMap::with_capacity(3);

@@ -34,6 +34,11 @@ use tracing_opentelemetry::{MetricsLayer, OpenTelemetryLayer};
 
 #[tokio::main]
 async fn main() -> Result<()> {
+    use std::io::Write;
+    std::io::stderr()
+        .write_all(b"!!! API-GATEWAY MAIN ENTERED !!!\n")?;
+    std::io::stderr().flush()?;
+
     println!("api-gateway start");
     // 1. Загрузка .env / .env.local
     //dotenvy::from_filename(".env.local").ok();
@@ -43,7 +48,19 @@ async fn main() -> Result<()> {
     let config = Config::from_env()?;
 
     // 3. Инициализация telemetry
-    let _guard = init_telemetry(&config)?;
+    let _guard = match init_telemetry(&config) {
+        Ok(guard) => guard,
+        Err(e) => {
+            eprintln!("Failed to init telemetry: {}", e);
+            // Продолжаем без telemetry
+            tracing_subscriber::fmt()
+                .json()
+                .with_env_filter(EnvFilter::from_default_env())
+                .init();
+            info!("Running without OpenTelemetry");
+            return Ok(());
+        }
+    };
 
     info!(
         "api-gateway service starting, Port: {}, Environment: {}",
@@ -142,11 +159,6 @@ fn otl_metadata(config: &Config) -> Result<MetadataMap, Error> {
     let auth_string = format!("{}:{}", config.otel_user, config.otel_password);
     let base64_token = base64::encode(auth_string.clone());
 
-    println!("auth_string1 {}", auth_string.clone());
-    println!("base64_token1 {}", base64_token.clone());
-
-    info!("auth_string1 {}", auth_string.clone());
-    info!("base64_token1 {}", base64_token.clone());
     let auth_header_value = format!("basic {}", base64_token.clone());
 
     let mut map = MetadataMap::with_capacity(3);
