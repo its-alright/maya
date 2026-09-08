@@ -7,6 +7,8 @@ pub struct Config {
     pub environment: String,
     pub cors_origin: String,
     pub otel_endpoint: String,
+    pub otel_user: String,
+    pub otel_password: String,
     pub jwt_secret: String,
     pub auth_service_url: String,
     pub web_api_service_url: String,
@@ -18,12 +20,17 @@ impl Config {
     pub fn from_env() -> Result<Self> {
         Ok(Config {
             port: std::env::var("GATEWAY_PORT")
-                .unwrap_or_else(|_| "8080".to_string())
+                .unwrap_or_else(|_| "50050".to_string())
                 .parse()?,
             environment: std::env::var("ENVIRONMENT").unwrap_or_else(|_| "development".to_string()),
             cors_origin: std::env::var("CORS_ORIGIN").unwrap_or_else(|_| "*".to_string()),
+            // ВАЖНО: используем имя сервиса в Docker, а не localhost!
             otel_endpoint: std::env::var("OTEL_ENDPOINT")
-                .unwrap_or_else(|_| "http://openobserve:5080".to_string()),
+                .unwrap_or_else(|_| "http://openobserve:5081".to_string()),
+            otel_user: std::env::var("ZO_ROOT_USER_EMAIL")
+                .map_err(|_| anyhow::anyhow!("ZO_ROOT_USER_EMAIL must be set"))?,
+            otel_password: std::env::var("ZO_ROOT_USER_PASSWORD")
+                .map_err(|_| anyhow::anyhow!("ZO_ROOT_USER_PASSWORD must be set"))?,
             jwt_secret: std::env::var("JWT_SECRET")
                 .map_err(|_| anyhow::anyhow!("JWT_SECRET must be set"))?,
             auth_service_url: std::env::var("AUTH_SERVICE_URL")

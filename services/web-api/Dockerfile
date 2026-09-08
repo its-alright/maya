@@ -1,4 +1,3 @@
-# Используем ту же версию Rust, что и локально
 FROM rust:1.98.0-bookworm AS builder
 
 WORKDIR /workspace
@@ -8,7 +7,6 @@ COPY Cargo.toml Cargo.lock ./
 COPY services/web-api/Cargo.toml ./services/web-api/
 COPY services/api-gateway/Cargo.toml ./services/api-gateway/
 COPY services/auth-service/Cargo.toml ./services/auth-service/
-
 
 # Создаем заглушки
 RUN mkdir -p services/web-api/src && \

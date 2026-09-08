@@ -1,12 +1,12 @@
+use crate::Config;
 use axum::{
+    Json,
     extract::{Path, State},
     http::{HeaderMap, StatusCode},
     response::IntoResponse,
-    Json,
 };
 use serde::{Deserialize, Serialize};
-use tracing::{error, info};
-use crate::Config;
+use tracing::info;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct LoginRequest {
@@ -35,8 +35,7 @@ pub async fn login(
 ) -> impl IntoResponse {
     info!("Login request for user: {}", payload.email);
 
-    // Здесь делаем gRPC вызов к auth-service
-    // Для упрощения пока возвращаем заглушку
+    // Здесь делаем http вызов к auth-service (пока возвращаем заглушку)
     let response = ApiResponse {
         success: true,
         data: Some(serde_json::json!({
@@ -60,6 +59,7 @@ pub async fn register(
 ) -> impl IntoResponse {
     info!("Register request for user: {}", payload.email);
 
+    // Здесь делаем http вызов к auth-service (пока возвращаем заглушку)
     let response = ApiResponse {
         success: true,
         data: Some(serde_json::json!({
@@ -78,6 +78,7 @@ pub async fn get_user(headers: HeaderMap) -> impl IntoResponse {
     // Здесь проверяем JWT и получаем пользователя из auth-service
     info!("Get user request");
 
+    // Здесь делаем http вызов к auth-service (пока возвращаем заглушку)
     let response = ApiResponse {
         success: true,
         data: Some(serde_json::json!({
@@ -92,18 +93,32 @@ pub async fn get_user(headers: HeaderMap) -> impl IntoResponse {
 }
 
 // Прокси для получения item из web-api
-pub async fn get_item(
-    Path(id): Path<String>,
-    headers: HeaderMap,
-) -> impl IntoResponse {
+pub async fn get_item(Path(id): Path<String>, headers: HeaderMap) -> impl IntoResponse {
     info!("Get item request: {}", id);
 
-    // Здесь делаем gRPC вызов к web-api с передачей JWT
+    // Здесь делаем http вызов к web-api с передачей JWT (пока возвращаем заглушку)
     let response = ApiResponse {
         success: true,
         data: Some(serde_json::json!({
             "id": id,
             "name": format!("Item {}", id)
+        })),
+        error: None,
+    };
+
+    (StatusCode::OK, Json(response))
+}
+
+#[tracing::instrument]
+pub async fn get_items(headers: HeaderMap) -> impl IntoResponse {
+    info!("Get items request");
+
+    // Здесь делаем http вызов к web-api с передачей JWT (пока возвращаем заглушку)
+    let response = ApiResponse {
+        success: true,
+        data: Some(serde_json::json!({
+            "id": 51,
+            "name": format!("Item {}", 51)
         })),
         error: None,
     };
@@ -118,6 +133,7 @@ pub async fn create_item(
 ) -> impl IntoResponse {
     info!("Create item request");
 
+    // Здесь делаем http вызов к web-api с передачей JWT (пока возвращаем заглушку)
     let response = ApiResponse {
         success: true,
         data: Some(serde_json::json!({

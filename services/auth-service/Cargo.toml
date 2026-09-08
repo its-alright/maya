@@ -20,7 +20,6 @@ opentelemetry_sdk = { workspace = true }
 
 tonic = { workspace = true }
 prost = { workspace = true }
-sqlx = { workspace = true }
 jsonwebtoken = { workspace = true }
 argon2 = { workspace = true }
 uuid = { workspace = true }

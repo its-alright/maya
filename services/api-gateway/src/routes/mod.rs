@@ -13,5 +13,6 @@ pub fn create_routes(config: Config) -> Router {
         .route("/auth/me", get(proxy::get_user))
         .route("/items/:id", get(proxy::get_item))
         .route("/items", post(proxy::create_item))
+        .route("/items", get(proxy::get_items))
         .with_state(config)
 }

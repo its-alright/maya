@@ -36,8 +36,9 @@ use tracing_opentelemetry::{MetricsLayer, OpenTelemetryLayer};
 
 #[tokio::main]
 async fn main() -> Result<()> {
+    println!("web-api start");
     // 1. Загрузка .env / .env.local
-    dotenvy::from_filename(".env.local").ok();
+    //dotenvy::from_filename(".env.local").ok();
     dotenv().ok();
 
     // 2. Загрузка конфигурации

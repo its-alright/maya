@@ -15,7 +15,7 @@ services:
     #  - ./scripts/init_db.sql:/docker-entrypoint-initdb.d/init.sql
     shm_size: 128mb
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U maya"]
+      test: [ "CMD-SHELL", "pg_isready -U maya" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -36,6 +36,32 @@ services:
       - "5082:5082"
     volumes:
       - openobserve_data:/data
+    networks:
+      - microservices-network
+
+  api-gateway:
+    build:
+      context: .
+      dockerfile: services/api-gateway/Dockerfile
+    env_file:
+      - .env
+    container_name: api-gateway
+    environment:
+      GATEWAY_PORT: 50050
+      ENVIRONMENT: development
+      CORS_ORIGIN: "*"
+      OTEL_ENDPOINT: ${OTEL_ENDPOINT:-http://localhost:5081}
+      JWT_SECRET: ${JWT_SECRET:-change_this_secret_in_production}
+      AUTH_SERVICE_URL: http://auth-service:50051
+      WEB_API_SERVICE_URL: http://web-api:50052
+      RATE_LIMIT_REQUESTS: 100
+      RATE_LIMIT_PERIOD_SECS: 60
+    ports:
+      - "50050:50050"
+    depends_on:
+      #- auth-service
+      - web-api
+      - openobserve
     networks:
       - microservices-network
 

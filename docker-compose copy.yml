@@ -49,7 +49,7 @@ services:
   #     dockerfile: services/api-gateway/Dockerfile
   #   container_name: microservices-gateway
   #   environment:
-  #     GATEWAY_PORT: 8080
+  #     GATEWAY_PORT: 50050
   #     ENVIRONMENT: development
   #     CORS_ORIGIN: "*"
   #     OTEL_ENDPOINT: http://openobserve:5080
@@ -59,7 +59,7 @@ services:
   #     RATE_LIMIT_REQUESTS: 100
   #     RATE_LIMIT_PERIOD_SECS: 60
   #   ports:
-  #     - "8080:8080"
+  #     - "50050:50050"
   #   depends_on:
   #     - auth-service
   #     - web-api
