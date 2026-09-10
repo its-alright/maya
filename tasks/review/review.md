@@ -1,8 +1,8 @@
-# Архитектурный аудит сервисов
+# Architecture Review of Services
 
-## 1. Аудит зависимостей
+## 1. Dependency Audit
 
-### Службы и их зависимости
+### Services and Their Dependencies
 
 - **API Gateway**:
   - Port
@@ -33,61 +33,61 @@
   - JWT secret
   - JWT expiration hours
 
-### Рекомендации по оптимизации
+### Optimization Recommendations
 
-1. **Сократить дублирование конфигурации**:
-   - Создать централізованний конфігуратційний сервіс на базі Redis або Consul
-   - Реалізувати API для управління конфігурацією
-   - Додати кішінг (caching) для часто змінюючихся конфігураційних даних
+1. Reduce Configuration Duplication:
+   - Create a centralized configuration service using Redis or Consul
+   - Implement API for configuration management
+   - Add caching for frequently changing configuration data
 
-2. **Улучшить взаємодію між сервісами**:
-   - Реалізувати service discovery з лінійною шкалибістю
-   - Додати обертачи (circuit breakers) з можливістю атоматичного розкручу
-   - Реалізувати rate limiting для захисту від DOS атак
+2. Improve Service Interactions:
+   - Implement service discovery with linear scalability
+   - Add circuit breakers with automatic failover capability
+   - Implement rate limiting for DOS attack protection
 
-3. **Код**:
-   - Використовувати `std::result` для обробки помилок
-   - Реалізувати логування з різними уровнями северострукуції (debug, info, error)
-   - Додати validation для всіх входящих запитів
-   - Використовувати `tokio` для асинхронних операцій
-   - Замінити `.unwrap()` на `?` оператор для кращої обробки помилок
+3. Code Improvements:
+   - Use `std::result` for error handling
+   - Implement logging with different severity levels (debug, info, error)
+   - Add validation for all incoming requests
+   - Use `tokio` for asynchronous operations
+   - Replace `.unwrap()` with `?` operator for better error handling
 
-## 2. Архитектурний аудит
+## 2. Architecture Review
 
-### Силі сторони
+### Strengths
 
 1. Clear separation of concerns
 2. Independent database connections for each service
 3. Proper use of OpenTelemetry for monitoring
-4. JWT based authentication
+4. JWT-based authentication
 
-### Вихідні проблеми
+### Existing Issues
 
-1. Дублікація конфігурації
-2. Нет централізованого конфігуратційного менеджеру
-3. Дублікація логіки CORS обробки
-4. Недостатня защищність конфігураційних даних
+1. Configuration duplication
+2. Lack of centralized configuration management
+3. Duplicate CORS handling logic
+4. Insufficient security of configuration data
 
-## 3. Рекомендації по рефакторингу
+## 3. Refactoring Recommendations
 
-1. **Зависимости**:
-   - Створити централізованний конфігуратційний сервіс зінфраструктурою для:
-     - Збереження конфігурації
-     - Проверки прав доступу
-     - Гісторизації змін
-   - Юніфікувація JWT конфігурації через централізованій сервис
-   - Стандартизувати CORS налаштування за допомогою middleware
+1. Dependencies:
+   - Create a centralized configuration service with infrastructure for:
+     - Configuration storage
+     - Access rights verification
+     - Change history tracking
+   - Standardize JWT configuration through centralized service
+   - Standardize CORS configuration using middleware
 
-2. **Архітектура**:
-   - Реалізувати service discovery з автоматичним обновлнням
-   - Додати обертачи з можливістю налаштування threshold
-   - Додати API gateways з rate limiting та сінквінцією
-   - Оптимізувати базові з'єднання за допомогою пулів та connection pooling
+2. Architecture:
+   - Implement service discovery with automatic updates
+   - Add circuit breakers with configurable thresholds
+   - Add API gateways with rate limiting and circuit breaking
+   - Optimize base connections using pools and connection pooling
 
-3. **Код**:
-   - Следувати Rust best practices з увагою до Borrow Checker
-   - Використовувати `clippy` для лінтаингу коду
-   - Реалізувати proper error handling з кастомними error type
-   - Додати unit та integration tests
-   - Використовувати `tokio` для асинхронних операцій
-   - Замінити жесткі завдання на асинхронні
+3. Code Improvements:
+   - Follow Rust best practices with attention to Borrow Checker
+   - Use `clippy` for linting code
+   - Implement proper error handling with custom error types
+   - Add unit and integration tests
+   - Use `tokio` for asynchronous operations
+   - Replace blocking code with asynchronous alternatives
