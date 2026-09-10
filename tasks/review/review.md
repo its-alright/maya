@@ -2,8 +2,9 @@
 
 ## 1. Аудит зависимостей
 
-### Общие зависимости
-- **api-gateway**:
+### Службы и их зависимости
+
+- **API Gateway**:
   - Port
   - Environment
   - CORS origin
@@ -14,7 +15,7 @@
   - Auth service URL
   - Web API URL
 
-- **web-api**:
+- **Web API**:
   - Port
   - Environment
   - Database URL
@@ -24,7 +25,7 @@
   - JWT secret
   - CORS origin
 
-- **auth-service**:
+- **Auth Service**:
   - Port
   - Environment
   - Database URL
@@ -32,46 +33,56 @@
   - JWT secret
   - JWT expiration hours
 
-### Зависимости которые можно оптимизировать
-1. Duplication of OpenTelemetry configuration across services
-2. Similar JWT configuration across services could be centralized
-3. CORS configuration could be unified
+### Рекомендации по оптимизации
 
-## 2. Архитектурный аудит
+1. **Сократить дублирование конфигурации**:
+   - Создать централізованний конфігуратційний сервіс
+   - Убрать дублікацію конфігурації OpenTelemetry
+   - Юніфікувація конфігурації JWT
 
-### Общая архитектура
-Сервисы разделены по邏гічним функціям:
-- api-gateway: Entry point, routing, and proxying
-- auth-service: Authentication and user management
-- web-api: Data storage and items management
+2. **Улучшить взаємодію між сервісами**:
+   - Реалізувати механізм обнаружування сервісів
+   - Реалізувати обертачи (circuit breakers)
+   - Додати API gateways для кращої routingu
+
+3. **Код**:
+   - Використовувати Rust best practices для zero allocations
+   - Використовувати std::result для обробки помилок
+   - Реалізувати proper logging
+   - Додати rate limiting
+
+## 2. Архитектурний аудит
 
 ### Силі сторони
+
 1. Clear separation of concerns
-2. Each service has its own database connection
+2. Independent database connections for each service
 3. Proper use of OpenTelemetry for monitoring
 4. JWT based authentication
 
 ### Вихідні проблеми
-1. Duplicate configuration across services
-2. Need for better inter-service communication patterns
-3. No centralized configuration management
-4. Potential for duplicated logic (e.g. CORS handling)
+
+1. Дублікація конфігурації
+2. Надо кращої взаємодії між сервісами
+3. Нет централізованого конфігуратційного менеджеру
+4. Дублікація логіки (наприклад, CORS обробка)
 
 ## 3. Рекомендації по рефакторингу
 
 1. **Зависимости**:
-   - Create a centralized configuration service
-   - Remove duplicate OpenTelemetry configurations
-   - Unify JWT configuration across services
+   - Створити централізованний конфігуратційний сервіс
+   - Юніфікувація JWT конфігурації
+   - Стандартизувати CORS налаштування
 
 2. **Архітектура**:
-   - Add service discovery mechanism
-   - Implement proper circuit breakers
-   - Consider adding API gateways for better routing
-   - Optimize database connections
+   - Реалізувати service discovery
+   - Додати обертачи
+   - Додати API gateways
+   - Оптимізувати базові з'єднання
 
 3. **Код**:
-   - Follow Rust best practices for zero allocations
-   - Use proper error handling throughout
-   - Implement proper logging across all services
-   - Consider adding proper rate limiting
+   - Следувати Rust best practices
+   - Використовувати proper error handling
+   - Реалізувати логування
+   - Додати rate limiting
+   - Використовувати tokio для асинхронних операцій
