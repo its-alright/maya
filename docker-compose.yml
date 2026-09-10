@@ -67,7 +67,7 @@ services:
       dockerfile: services/web-api/Dockerfile
     env_file:
       - .env
-    container_name: webapi
+    container_name: web-api
     environment:
       WEB_API_PORT: 50052
       ENVIRONMENT: development
