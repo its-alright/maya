@@ -38,8 +38,7 @@ use tracing_opentelemetry::{MetricsLayer, OpenTelemetryLayer};
 #[tokio::main]
 async fn main() -> Result<()> {
     use std::io::Write;
-    std::io::stderr()
-        .write_all(b"!!! WEB-API MAIN ENTERED !!!\n")?;
+    std::io::stderr().write_all(b"!!! WEB-API MAIN ENTERED !!!\n")?;
     std::io::stderr().flush()?;
 
     println!("web-api start");
@@ -66,8 +65,8 @@ async fn main() -> Result<()> {
     };
 
     info!(
-        "Web-API Service starting, Port: {}, Environment: {}",
-        config.port, config.environment
+        "Web-API Service starting, Port: 8080, Environment: {}",
+        config.environment
     );
 
     // 4. Инициализация БД
@@ -120,7 +119,7 @@ async fn main() -> Result<()> {
         }));
 
     // 8. Запускаем сервер
-    let addr = format!("0.0.0.0:{}", config.port);
+    let addr = "0.0.0.0:8080";
     info!("Web API HTTP server listening on http://{}", addr);
     info!("Press Ctrl+C to stop");
 

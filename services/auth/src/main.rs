@@ -1,13 +1,11 @@
 #![allow(dead_code)]
 
-mod config;
-mod middleware;
 mod routes;
 
 use anyhow::Result;
 use axum::{Router, http::HeaderValue};
-use config::Config;
 use dotenvy::dotenv;
+use shared::{config::Config, middleware::metrics::MetricsMiddleware};
 use std::sync::Arc;
 use tower_http::cors::CorsLayer;
 use tracing::{error, info};
@@ -34,11 +32,7 @@ use tracing_opentelemetry::{MetricsLayer, OpenTelemetryLayer};
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    use std::io::Write;
-    std::io::stderr().write_all(b"!!! API-GATEWAY MAIN ENTERED !!!\n")?;
-    std::io::stderr().flush()?;
-
-    println!("api-gateway start");
+    println!("Auth start");
     // 1. Загрузка .env / .env.local
     //dotenvy::from_filename(".env.local").ok();
     dotenv().ok();
@@ -81,10 +75,10 @@ async fn main() -> Result<()> {
         ]);
 
     // 7. Создаем роутер с метриками
-    let metrics_middleware = Arc::new(middleware::metrics::MetricsMiddleware::new());
+    let metrics_middleware = Arc::new(MetricsMiddleware::new());
 
     let app = Router::new()
-        .nest("/api", routes::create_routes(config.clone()))
+        .nest("/api", routes::create_routes())
         .layer(cors)
         .layer(tower_http::trace::TraceLayer::new_for_http())
         .layer(axum::middleware::from_fn({

@@ -6,6 +6,8 @@
       <sourceFolder url="file://$MODULE_DIR$/services/auth-service/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/services/web-api/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/services/auth/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/shared/src" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/target" />
     </content>
     <orderEntry type="inheritedJdk" />

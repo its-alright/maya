@@ -1,7 +1,8 @@
 [workspace]
 members = [
+    "shared",
     "services/api-gateway",
-    "services/auth-service",
+    "services/auth",
     "services/web-api"
 ]
 resolver = "2"

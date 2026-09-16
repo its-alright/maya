@@ -47,7 +47,6 @@ services:
       - .env
     container_name: api-gateway
     environment:
-      GATEWAY_PORT: 50050
       ENVIRONMENT: development
       CORS_ORIGIN: "*"
       OTEL_ENDPOINT: ${OTEL_ENDPOINT:-http://localhost:5081}
@@ -57,7 +56,7 @@ services:
       RATE_LIMIT_REQUESTS: 100
       RATE_LIMIT_PERIOD_SECS: 60
     ports:
-      - "50050:50050"
+      - "50050:8080"
     networks:
       - microservices-network
 
@@ -69,13 +68,12 @@ services:
       - .env
     container_name: web-api
     environment:
-      WEB_API_PORT: 50052
       ENVIRONMENT: development
       DATABASE_URL: ${DATABASE_URL:-postgres://dbhost:dbuser@postgres:5432/dbname}
       OTEL_ENDPOINT: ${OTEL_ENDPOINT:-http://localhost:5081}
       JWT_SECRET: ${JWT_SECRET:-change_this_secret_in_production}
     ports:
-      - "50052:50052"
+      - "50052:8080"
     networks:
       - microservices-network
 

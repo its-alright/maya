@@ -49,7 +49,6 @@ services:
   #     dockerfile: services/api-gateway/Dockerfile
   #   container_name: microservices-gateway
   #   environment:
-  #     GATEWAY_PORT: 50050
   #     ENVIRONMENT: development
   #     CORS_ORIGIN: "*"
   #     OTEL_ENDPOINT: http://openobserve:5080
@@ -95,7 +94,6 @@ services:
       dockerfile: services/web-api/Dockerfile
     container_name: webapi
     environment:
-      WEB_API_PORT: 50052
       ENVIRONMENT: development
       DATABASE_URL: postgres://dbhost:dbuser@postgres:5432/dbname
       OTEL_ENDPOINT: http://openobserve:5080

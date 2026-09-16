@@ -6,24 +6,25 @@ WORKDIR /workspace
 COPY Cargo.toml Cargo.lock ./
 COPY services/web-api/Cargo.toml ./services/web-api/
 COPY services/api-gateway/Cargo.toml ./services/api-gateway/
-COPY services/auth-service/Cargo.toml ./services/auth-service/
+COPY services/auth/Cargo.toml ./services/auth/
 
 # Создаем заглушки
 RUN mkdir -p services/web-api/src && \
     echo "fn main() {}" > services/web-api/src/main.rs && \
     mkdir -p services/api-gateway/src && \
     echo "fn main() {}" > services/api-gateway/src/main.rs && \
-    mkdir -p services/auth-service/src && \
-    echo "fn main() {}" > services/auth-service/src/main.rs
+    mkdir -p services/auth/src && \
+    echo "fn main() {}" > services/auth/src/main.rs
 
 # Собираем с --locked для точных версий
-RUN cargo build --release -p api-gateway --locked
+RUN cargo build --release -p auth --locked
 
-# src
-COPY services/api-gateway/src ./services/api-gateway/src
+# src + migrations
+COPY services/auth/src ./services/auth/src
+COPY services/auth/migrations ./services/auth/migrations
 
 # Пересобираем
-RUN cargo build --release -p api-gateway --locked
+RUN cargo build --release -p auth --locked
 
 FROM debian:bookworm-slim
 
@@ -32,8 +33,8 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
-COPY --from=builder /workspace/target/release/api-gateway /app/api-gateway
+COPY --from=builder /workspace/target/release/auth /app/auth
 
-EXPOSE 8080
+EXPOSE 50051
 
-CMD ["/app/api-gateway"]
+CMD ["/app/auth"]

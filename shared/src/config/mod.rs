@@ -9,10 +9,10 @@ pub struct Config {
     pub otel_user: String,
     pub otel_password: String,
     pub jwt_secret: String,
+    //TODO: move / extend
+    //api-gateway
     pub auth_service_url: String,
     pub web_api_service_url: String,
-    pub rate_limit_requests: u32,
-    pub rate_limit_period_secs: u64,
 }
 
 impl Config {
@@ -33,12 +33,6 @@ impl Config {
                 .unwrap_or_else(|_| "http://auth-service:50051".to_string()),
             web_api_service_url: std::env::var("WEB_API_SERVICE_URL")
                 .unwrap_or_else(|_| "http://web-api:50052".to_string()),
-            rate_limit_requests: std::env::var("RATE_LIMIT_REQUESTS")
-                .unwrap_or_else(|_| "100".to_string())
-                .parse()?,
-            rate_limit_period_secs: std::env::var("RATE_LIMIT_PERIOD_SECS")
-                .unwrap_or_else(|_| "60".to_string())
-                .parse()?,
         })
     }
 }
