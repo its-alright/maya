@@ -57,6 +57,7 @@ dependencies = [
  "reqwest",
  "serde",
  "serde_json",
+ "shared",
  "sqlx",
  "thiserror 1.0.69",
  "tokio",
@@ -2361,6 +2362,7 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "axum",
+ "base64 0.22.1",
  "jsonwebtoken",
  "opentelemetry 0.24.0",
  "opentelemetry-otlp",
@@ -2370,6 +2372,7 @@ dependencies = [
  "serde",
  "thiserror 1.0.69",
  "tokio",
+ "tonic",
  "tracing",
  "tracing-opentelemetry",
  "tracing-subscriber",

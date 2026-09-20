@@ -1,6 +1,6 @@
-use std::sync::Arc;
-use jsonwebtoken::{decode, Validation, DecodingKey};
+use jsonwebtoken::{DecodingKey, Validation, decode};
 use serde::{Deserialize, Serialize};
+use std::sync::Arc;
 use tracing::error;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -30,10 +30,10 @@ impl AuthService {
             &DecodingKey::from_secret(self.jwt_secret.as_bytes()),
             &validation,
         )
-            .map_err(|e| {
-                error!("JWT validation failed: {}", e);
-                AuthError::InvalidToken
-            })?;
+        .map_err(|e| {
+            error!("JWT validation failed: {}", e);
+            AuthError::InvalidToken
+        })?;
 
         Ok(token_data.claims)
     }

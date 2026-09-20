@@ -28,3 +28,9 @@ opentelemetry-semantic-conventions = { workspace = true }
 tokio = { workspace = true }
 #serde = { workspace = true }
 
+#wire
+tonic = { workspace = true }
+
+#utils
+base64 = { workspace = true }
+

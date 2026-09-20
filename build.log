@@ -1,0 +1,469 @@
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 1.36kB done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/debian:bookworm-slim
+#2 ...
+
+#3 [internal] load metadata for docker.io/library/rust:1.98.0-bookworm
+#3 DONE 0.9s
+
+#2 [internal] load metadata for docker.io/library/debian:bookworm-slim
+#2 DONE 0.9s
+
+#4 [internal] load .dockerignore
+#4 transferring context: 2B done
+#4 DONE 0.0s
+
+#5 [stage-1 1/4] FROM docker.io/library/debian:bookworm-slim@sha256:88200866dfff7ea7f5cbcb6ec7c8a701889efe6fe859fe64d6990e4b07ea4171
+#5 resolve docker.io/library/debian:bookworm-slim@sha256:88200866dfff7ea7f5cbcb6ec7c8a701889efe6fe859fe64d6990e4b07ea4171 0.0s done
+#5 CACHED
+
+#6 [builder  1/13] FROM docker.io/library/rust:1.98.0-bookworm@sha256:82150a52ec202c1b14d7817e14516c392bb7f5cfebd88f1ed531cb37ebd39922
+#6 resolve docker.io/library/rust:1.98.0-bookworm@sha256:82150a52ec202c1b14d7817e14516c392bb7f5cfebd88f1ed531cb37ebd39922 0.0s done
+#6 DONE 0.0s
+
+#7 [builder  2/13] WORKDIR /workspace
+#7 CACHED
+
+#8 [internal] load build context
+#8 transferring context: 1.25kB done
+#8 DONE 0.0s
+
+#9 [builder  3/13] COPY Cargo.toml Cargo.lock ./
+#9 DONE 0.0s
+
+#10 [stage-1 2/4] RUN apt-get update && apt-get install -y     ca-certificates     && rm -rf /var/lib/apt/lists/*
+#10 ...
+
+#11 [builder  4/13] COPY services/web-api/Cargo.toml ./services/web-api/
+#11 DONE 0.0s
+
+#12 [builder  5/13] COPY services/api-gateway/Cargo.toml ./services/api-gateway/
+#12 DONE 0.0s
+
+#13 [builder  6/13] COPY services/auth/Cargo.toml ./services/auth/
+#13 DONE 0.0s
+
+#14 [builder  7/13] COPY shared/Cargo.toml ./shared/
+#14 DONE 0.0s
+
+#15 [builder  8/13] RUN mkdir -p services/web-api/src &&     echo "fn main() {}" > services/web-api/src/main.rs &&     mkdir -p services/api-gateway/src &&     echo "fn main() {}" > services/api-gateway/src/main.rs &&     mkdir -p services/auth/src &&     echo "fn main() {}" > services/auth/src/main.rs &&     mkdir -p shared/src &&     echo "" > shared/src/lib.rs
+#15 DONE 0.2s
+
+#10 [stage-1 2/4] RUN apt-get update && apt-get install -y     ca-certificates     && rm -rf /var/lib/apt/lists/*
+#10 0.699 Get:1 http://deb.debian.org/debian bookworm InRelease [151 kB]
+#10 0.847 Get:2 http://deb.debian.org/debian bookworm-updates InRelease [55.4 kB]
+#10 0.878 Get:3 http://deb.debian.org/debian-security bookworm-security InRelease [34.8 kB]
+#10 0.910 Get:4 http://deb.debian.org/debian bookworm/main amd64 Packages [8790 kB]
+#10 1.521 Get:5 http://deb.debian.org/debian bookworm-updates/main amd64 Packages [6924 B]
+#10 1.522 Get:6 http://deb.debian.org/debian-security bookworm-security/main amd64 Packages [340 kB]
+#10 2.011 Fetched 9379 kB in 2s (5562 kB/s)
+#10 2.011 Reading package lists...
+#10 2.281 Reading package lists...
+#10 2.529 Building dependency tree...
+#10 2.602 Reading state information...
+#10 2.669 The following additional packages will be installed:
+#10 2.669   libssl3 openssl
+#10 2.688 The following NEW packages will be installed:
+#10 2.688   ca-certificates libssl3 openssl
+#10 2.757 0 upgraded, 3 newly installed, 0 to remove and 2 not upgraded.
+#10 2.757 Need to get 3637 kB of archives.
+#10 2.757 After this operation, 8940 kB of additional disk space will be used.
+#10 2.757 Get:1 http://deb.debian.org/debian bookworm/main amd64 libssl3 amd64 3.0.20-1~deb12u2 [2036 kB]
+#10 2.974 Get:2 http://deb.debian.org/debian bookworm/main amd64 openssl amd64 3.0.20-1~deb12u2 [1439 kB]
+#10 3.066 Get:3 http://deb.debian.org/debian-security bookworm-security/main amd64 ca-certificates all 20250419~deb12u1 [162 kB]
+#10 3.187 debconf: delaying package configuration, since apt-utils is not installed
+#10 3.202 Fetched 3637 kB in 0s (9459 kB/s)
+#10 3.223 Selecting previously unselected package libssl3:amd64.
+#10 3.223 (Reading database ... 
+(Reading database ... 5%
+(Reading database ... 10%
+(Reading database ... 15%
+(Reading database ... 20%
+(Reading database ... 25%
+(Reading database ... 30%
+(Reading database ... 35%
+(Reading database ... 40%
+(Reading database ... 45%
+(Reading database ... 50%
+(Reading database ... 55%
+(Reading database ... 60%
+(Reading database ... 65%
+(Reading database ... 70%
+(Reading database ... 75%
+(Reading database ... 80%
+(Reading database ... 85%
+(Reading database ... 90%
+(Reading database ... 95%
+(Reading database ... 100%
+(Reading database ... 6096 files and directories currently installed.)
+#10 3.250 Preparing to unpack .../libssl3_3.0.20-1~deb12u2_amd64.deb ...
+#10 3.256 Unpacking libssl3:amd64 (3.0.20-1~deb12u2) ...
+#10 3.351 Selecting previously unselected package openssl.
+#10 3.352 Preparing to unpack .../openssl_3.0.20-1~deb12u2_amd64.deb ...
+#10 3.355 Unpacking openssl (3.0.20-1~deb12u2) ...
+#10 3.436 Selecting previously unselected package ca-certificates.
+#10 3.437 Preparing to unpack .../ca-certificates_20250419~deb12u1_all.deb ...
+#10 3.440 Unpacking ca-certificates (20250419~deb12u1) ...
+#10 3.497 Setting up libssl3:amd64 (3.0.20-1~deb12u2) ...
+#10 3.506 Setting up openssl (3.0.20-1~deb12u2) ...
+#10 3.518 Setting up ca-certificates (20250419~deb12u1) ...
+#10 3.566 debconf: unable to initialize frontend: Dialog
+#10 3.566 debconf: (TERM is not set, so the dialog frontend is not usable.)
+#10 3.566 debconf: falling back to frontend: Readline
+#10 3.567 debconf: unable to initialize frontend: Readline
+#10 3.567 debconf: (Can't locate Term/ReadLine.pm in @INC (you may need to install the Term::ReadLine module) (@INC contains: /etc/perl /usr/local/lib/x86_64-linux-gnu/perl/5.36.0 /usr/local/share/perl/5.36.0 /usr/lib/x86_64-linux-gnu/perl5/5.36 /usr/share/perl5 /usr/lib/x86_64-linux-gnu/perl-base /usr/lib/x86_64-linux-gnu/perl/5.36 /usr/share/perl/5.36 /usr/local/lib/site_perl) at /usr/share/perl5/Debconf/FrontEnd/Readline.pm line 7.)
+#10 3.567 debconf: falling back to frontend: Teletype
+#10 3.937 Updating certificates in /etc/ssl/certs...
+#10 4.440 150 added, 0 removed; done.
+#10 4.463 Processing triggers for libc-bin (2.36-9+deb12u14) ...
+#10 4.508 Processing triggers for ca-certificates (20250419~deb12u1) ...
+#10 4.515 Updating certificates in /etc/ssl/certs...
+#10 4.942 0 added, 0 removed; done.
+#10 4.942 Running hooks in /etc/ca-certificates/update.d...
+#10 4.944 done.
+#10 DONE 5.1s
+
+#16 [stage-1 3/4] WORKDIR /app
+#16 DONE 0.0s
+
+#17 [builder  9/13] RUN cargo build --release -p auth --locked
+#17 0.598     Updating crates.io index
+#17 3.565  Downloading crates ...
+#17 3.875   Downloaded errno v0.3.14
+#17 3.882   Downloaded atomic-waker v1.1.2
+#17 3.885   Downloaded equivalent v1.0.2
+#17 3.890   Downloaded futures-macro v0.3.34
+#17 3.891   Downloaded futures-sink v0.3.34
+#17 3.908   Downloaded async-stream v0.3.6
+#17 3.917   Downloaded futures-core v0.3.34
+#17 3.926   Downloaded http-body v1.1.0
+#17 3.934   Downloaded form_urlencoded v1.2.2
+#17 3.943   Downloaded async-stream-impl v0.3.6
+#17 3.965   Downloaded futures-task v0.3.34
+#17 3.971   Downloaded lazy_static v1.5.0
+#17 3.973   Downloaded tokio-macros v2.7.2
+#17 3.975   Downloaded num-conv v0.2.2
+#17 3.998   Downloaded thread_local v1.1.10
+#17 4.000   Downloaded tower-layer v0.3.3
+#17 4.002   Downloaded tracing-serde v0.2.0
+#17 4.004   Downloaded tower-service v0.3.3
+#17 4.006   Downloaded try-lock v0.2.5
+#17 4.007   Downloaded sync_wrapper v1.0.2
+#17 4.009   Downloaded mime v0.3.17
+#17 4.010   Downloaded time-core v0.1.9
+#17 4.012   Downloaded powerfmt v0.2.0
+#17 4.015   Downloaded cfg-if v1.0.4
+#17 4.018   Downloaded httpdate v1.0.3
+#17 4.026   Downloaded serde_urlencoded v0.7.1
+#17 4.029   Downloaded zeroize_derive v1.5.0
+#17 4.030   Downloaded urlencoding v2.1.3
+#17 4.032   Downloaded scopeguard v1.2.0
+#17 4.041   Downloaded hex v0.4.3
+#17 4.049   Downloaded want v0.3.1
+#17 4.053   Downloaded tracing-log v0.2.0
+#17 4.056   Downloaded signature v2.2.0
+#17 4.057   Downloaded simple_asn1 v0.6.4
+#17 4.059   Downloaded slab v0.4.12
+#17 4.060   Downloaded itoa v1.0.18
+#17 4.062   Downloaded serde_path_to_error v0.1.20
+#17 4.064   Downloaded signal-hook-registry v1.4.8
+#17 4.065   Downloaded thiserror v1.0.69
+#17 4.072   Downloaded smallvec v1.16.0
+#17 4.074   Downloaded zmij v1.0.23
+#17 4.075   Downloaded thiserror v2.0.20
+#17 4.083   Downloaded thiserror-impl v1.0.69
+#17 4.085   Downloaded matchers v0.2.0
+#17 4.086   Downloaded time-macros v0.2.32
+#17 4.090   Downloaded thiserror-impl v2.0.20
+#17 4.093   Downloaded tracing-attributes v0.1.31
+#17 4.098   Downloaded zeroize v1.9.0
+#17 4.101   Downloaded percent-encoding v2.3.2
+#17 4.103   Downloaded tokio-stream v0.1.19
+#17 4.110   Downloaded serde_derive v1.0.229
+#17 4.114   Downloaded serde_core v1.0.229
+#17 4.117   Downloaded unicode-ident v1.0.24
+#17 4.122   Downloaded sharded-slab v0.1.7
+#17 4.127   Downloaded socket2 v0.5.10
+#17 4.129   Downloaded serde_json v1.0.151
+#17 4.139   Downloaded socket2 v0.6.5
+#17 4.142   Downloaded uuid v1.26.0
+#17 4.145   Downloaded serde v1.0.229
+#17 4.149   Downloaded rand_chacha v0.3.1
+#17 4.151   Downloaded tracing-core v0.1.36
+#17 4.154   Downloaded tonic v0.12.3
+#17 4.163   Downloaded tower v0.5.3
+#17 4.176   Downloaded tower v0.4.13
+#17 4.189   Downloaded tower-http v0.5.2
+#17 4.198   Downloaded tokio-util v0.7.19
+#17 4.207   Downloaded tracing-opentelemetry v0.25.0
+#17 4.210   Downloaded tracing-subscriber v0.3.23
+#17 4.220   Downloaded zerocopy v0.8.56
+#17 4.250   Downloaded dotenvy v0.15.7
+#17 4.253   Downloaded fnv v1.0.7
+#17 4.254   Downloaded time v0.3.55
+#17 4.272   Downloaded syn v2.0.119
+#17 4.285   Downloaded syn v3.0.5
+#17 4.296   Downloaded async-trait v0.1.92
+#17 4.301   Downloaded deranged v0.5.8
+#17 4.302   Downloaded futures-executor v0.3.34
+#17 4.304   Downloaded tracing v0.1.44
+#17 4.321   Downloaded autocfg v1.5.1
+#17 4.323   Downloaded nu-ansi-term v0.50.3
+#17 4.325   Downloaded tokio v1.53.1
+#17 4.377   Downloaded either v1.18.0
+#17 4.379   Downloaded axum-core v0.4.5
+#17 4.381   Downloaded num-integer v0.1.47
+#17 4.383   Downloaded opentelemetry-prometheus v0.14.1
+#17 4.386   Downloaded opentelemetry-stdout v0.5.0
+#17 4.387   Downloaded opentelemetry-otlp v0.17.0
+#17 4.389   Downloaded lock_api v0.4.14
+#17 4.391   Downloaded glob v0.3.4
+#17 4.392   Downloaded http-body-util v0.1.5
+#17 4.394   Downloaded rand_core v0.6.4
+#17 4.396   Downloaded quote v1.0.47
+#17 4.399   Downloaded pin-project-lite v0.2.17
+#17 4.406   Downloaded pin-project-internal v1.1.13
+#17 4.408   Downloaded prost-derive v0.13.5
+#17 4.410   Downloaded ppv-lite86 v0.2.21
+#17 4.411   Downloaded pem v3.0.6
+#17 4.413   Downloaded httparse v1.10.1
+#17 4.416   Downloaded futures-channel v0.3.34
+#17 4.419   Downloaded getrandom v0.2.17
+#17 4.422   Downloaded anyhow v1.0.104
+#17 4.427   Downloaded prost v0.13.5
+#17 4.428   Downloaded ordered-float v4.6.0
+#17 4.430   Downloaded once_cell v1.21.4
+#17 4.433   Downloaded hyper-timeout v0.5.2
+#17 4.435   Downloaded matchit v0.7.3
+#17 4.437   Downloaded parking_lot v0.12.5
+#17 4.453   Downloaded rustversion v1.0.23
+#17 4.457   Downloaded bytes v1.12.1
+#17 4.461   Downloaded bitflags v2.13.1
+#17 4.466   Downloaded getrandom v0.4.3
+#17 4.477   Downloaded opentelemetry-semantic-conventions v0.16.0
+#17 4.484   Downloaded log v0.4.34
+#17 4.507   Downloaded parking_lot_core v0.9.12
+#17 4.511   Downloaded num-traits v0.2.19
+#17 4.514   Downloaded ryu v1.0.23
+#17 4.533   Downloaded procfs v0.16.0
+#17 4.537   Downloaded proc-macro2 v1.0.107
+#17 4.553   Downloaded base64 v0.22.1
+#17 4.570   Downloaded jsonwebtoken v11.0.0
+#17 4.596   Downloaded opentelemetry v0.21.0
+#17 4.600   Downloaded opentelemetry v0.24.0
+#17 4.605   Downloaded indexmap v1.9.3
+#17 4.614   Downloaded pin-project v1.1.13
+#17 4.627   Downloaded base64 v0.21.7
+#17 4.675   Downloaded rand v0.8.8
+#17 4.692   Downloaded procfs-core v0.16.0
+#17 4.706   Downloaded prometheus v0.13.4
+#17 4.711   Downloaded hashbrown v0.12.3
+#17 4.734   Downloaded memchr v2.8.3
+#17 4.759   Downloaded num-bigint v0.4.8
+#17 4.764   Downloaded indexmap v2.14.2
+#17 4.788   Downloaded http v1.5.0
+#17 4.795   Downloaded hyper-util v0.1.20
+#17 4.827   Downloaded mio v1.2.3
+#17 4.861   Downloaded opentelemetry_sdk v0.21.2
+#17 4.876   Downloaded itertools v0.14.0
+#17 4.882   Downloaded axum v0.7.9
+#17 4.889   Downloaded opentelemetry_sdk v0.24.1
+#17 4.896   Downloaded hashbrown v0.17.1
+#17 4.900   Downloaded opentelemetry-proto v0.7.0
+#17 4.913   Downloaded hyper v1.11.1
+#17 4.934   Downloaded futures-util v0.3.34
+#17 4.947   Downloaded h2 v0.4.19
+#17 4.953   Downloaded protobuf v2.28.0
+#17 4.960   Downloaded aho-corasick v1.1.5
+#17 4.970   Downloaded chrono v0.4.45
+#17 5.051   Downloaded regex-syntax v0.8.11
+#17 5.057   Downloaded rustix v0.38.44
+#17 5.108   Downloaded regex-automata v0.4.18
+#17 5.146   Downloaded libc v0.2.189
+#17 5.231   Downloaded linux-raw-sys v0.4.15
+#17 5.329    Compiling proc-macro2 v1.0.107
+#17 5.331    Compiling unicode-ident v1.0.24
+#17 5.331    Compiling quote v1.0.47
+#17 5.331    Compiling libc v0.2.189
+#17 5.332    Compiling cfg-if v1.0.4
+#17 5.333    Compiling pin-project-lite v0.2.17
+#17 5.335    Compiling futures-core v0.3.34
+#17 5.336    Compiling once_cell v1.21.4
+#17 5.337    Compiling bytes v1.12.1
+#17 5.339    Compiling futures-sink v0.3.34
+#17 5.339    Compiling smallvec v1.16.0
+#17 5.339    Compiling itoa v1.0.18
+#17 5.342    Compiling parking_lot_core v0.9.12
+#17 5.345    Compiling scopeguard v1.2.0
+#17 5.346    Compiling autocfg v1.5.1
+#17 5.348    Compiling slab v0.4.12
+#17 5.350    Compiling log v0.4.34
+#17 5.350    Compiling serde_core v1.0.229
+#17 5.351    Compiling futures-task v0.3.34
+#17 5.354    Compiling zerocopy v0.8.56
+#17 5.354    Compiling hashbrown v0.17.1
+#17 5.356    Compiling equivalent v1.0.2
+#17 5.356    Compiling thiserror v1.0.69
+#17 5.356    Compiling serde v1.0.229
+#17 5.497    Compiling lock_api v0.4.14
+#17 5.501    Compiling futures-channel v0.3.34
+#17 5.502    Compiling memchr v2.8.3
+#17 5.502    Compiling zmij v1.0.23
+#17 5.504    Compiling serde_json v1.0.151
+#17 5.540    Compiling tower-service v0.3.3
+#17 5.549    Compiling tracing-core v0.1.36
+#17 5.551    Compiling fnv v1.0.7
+#17 5.562    Compiling anyhow v1.0.104
+#17 5.585    Compiling percent-encoding v2.3.2
+#17 5.588    Compiling httparse v1.10.1
+#17 5.593    Compiling tower-layer v0.3.3
+#17 5.593    Compiling atomic-waker v1.1.2
+#17 5.599    Compiling try-lock v0.2.5
+#17 5.624    Compiling glob v0.3.4
+#17 5.642    Compiling want v0.3.1
+#17 5.647    Compiling httpdate v1.0.3
+#17 5.662    Compiling rustversion v1.0.23
+#17 5.679    Compiling mime v0.3.17
+#17 5.699    Compiling num-traits v0.2.19
+#17 5.701    Compiling indexmap v1.9.3
+#17 5.730    Compiling either v1.18.0
+#17 5.746    Compiling sync_wrapper v1.0.2
+#17 5.800    Compiling lazy_static v1.5.0
+#17 5.813    Compiling form_urlencoded v1.2.2
+#17 5.814    Compiling hashbrown v0.12.3
+#17 5.819    Compiling ryu v1.0.23
+#17 5.822    Compiling bitflags v2.13.1
+#17 5.839    Compiling base64 v0.22.1
+#17 5.850    Compiling time-core v0.1.9
+#17 5.860    Compiling http v1.5.0
+#17 5.895    Compiling itertools v0.14.0
+#17 5.907    Compiling matchit v0.7.3
+#17 6.006    Compiling indexmap v2.14.2
+#17 6.006    Compiling rustix v0.38.44
+#17 6.020    Compiling thiserror v2.0.20
+#17 6.022    Compiling num-conv v0.2.2
+#17 6.035    Compiling regex-syntax v0.8.11
+#17 6.101    Compiling protobuf v2.28.0
+#17 6.105    Compiling deranged v0.5.8
+#17 6.118    Compiling time-macros v0.2.32
+#17 6.155    Compiling procfs v0.16.0
+#17 6.188    Compiling hex v0.4.3
+#17 6.235    Compiling getrandom v0.4.3
+#17 6.243    Compiling powerfmt v0.2.0
+#17 6.253    Compiling linux-raw-sys v0.4.15
+#17 6.307    Compiling tracing-log v0.2.0
+#17 6.317    Compiling sharded-slab v0.1.7
+#17 6.321    Compiling thread_local v1.1.10
+#17 6.329    Compiling prometheus v0.13.4
+#17 6.341    Compiling nu-ansi-term v0.50.3
+#17 6.360    Compiling urlencoding v2.1.3
+#17 6.413    Compiling procfs-core v0.16.0
+#17 6.438    Compiling syn v2.0.119
+#17 6.449    Compiling syn v3.0.5
+#17 6.481    Compiling pem v3.0.6
+#17 6.490    Compiling ordered-float v4.6.0
+#17 6.530    Compiling num-integer v0.1.47
+#17 6.539    Compiling chrono v0.4.45
+#17 6.598    Compiling signature v2.2.0
+#17 6.603    Compiling base64 v0.21.7
+#17 6.654    Compiling http-body v1.1.0
+#17 6.744    Compiling num-bigint v0.4.8
+#17 6.748    Compiling opentelemetry-semantic-conventions v0.16.0
+#17 6.798    Compiling errno v0.3.14
+#17 6.806    Compiling mio v1.2.3
+#17 6.807    Compiling socket2 v0.6.5
+#17 6.818    Compiling getrandom v0.2.17
+#17 6.852    Compiling http-body-util v0.1.5
+#17 6.924    Compiling parking_lot v0.12.5
+#17 6.959    Compiling signal-hook-registry v1.4.8
+#17 6.990    Compiling rand_core v0.6.4
+#17 7.002    Compiling socket2 v0.5.10
+#17 7.055    Compiling dotenvy v0.15.7
+#17 7.126    Compiling uuid v1.26.0
+#17 7.169    Compiling time v0.3.55
+#17 7.215    Compiling regex-automata v0.4.18
+#17 7.716    Compiling serde_path_to_error v0.1.20
+#17 8.474    Compiling tokio-macros v2.7.2
+#17 8.474    Compiling futures-macro v0.3.34
+#17 8.474    Compiling serde_derive v1.0.229
+#17 8.476    Compiling async-trait v0.1.92
+#17 8.476    Compiling thiserror-impl v2.0.20
+#17 8.830    Compiling tokio v1.53.1
+#17 8.833    Compiling matchers v0.2.0
+#17 8.912    Compiling ppv-lite86 v0.2.21
+#17 8.959    Compiling futures-util v0.3.34
+#17 9.165    Compiling rand_chacha v0.3.1
+#17 9.235    Compiling tracing-attributes v0.1.31
+#17 9.271    Compiling thiserror-impl v1.0.69
+#17 9.302    Compiling pin-project-internal v1.1.13
+#17 9.318    Compiling rand v0.8.8
+#17 9.365    Compiling prost-derive v0.13.5
+#17 9.398    Compiling async-stream-impl v0.3.6
+#17 9.439    Compiling zeroize_derive v1.5.0
+#17 9.460    Compiling simple_asn1 v0.6.4
+#17 9.700    Compiling async-stream v0.3.6
+#17 9.785    Compiling zeroize v1.9.0
+#17 9.981    Compiling pin-project v1.1.13
+#17 10.01    Compiling tracing v0.1.44
+#17 10.10    Compiling opentelemetry v0.24.0
+#17 10.10    Compiling opentelemetry v0.21.0
+#17 10.17    Compiling tower-http v0.5.2
+#17 10.22    Compiling prost v0.13.5
+#17 10.65    Compiling serde_urlencoded v0.7.1
+#17 10.81    Compiling futures-executor v0.3.34
+#17 10.82    Compiling axum-core v0.4.5
+#17 10.83    Compiling tracing-serde v0.2.0
+#17 10.92    Compiling tracing-subscriber v0.3.23
+#17 10.95    Compiling opentelemetry_sdk v0.21.2
+#17 10.96    Compiling jsonwebtoken v11.0.0
+#17 11.80    Compiling opentelemetry-prometheus v0.14.1
+#17 12.76    Compiling tokio-util v0.7.19
+#17 12.76    Compiling tokio-stream v0.1.19
+#17 12.76    Compiling tower v0.5.3
+#17 12.98    Compiling opentelemetry_sdk v0.24.1
+#17 13.01    Compiling h2 v0.4.19
+#17 13.01    Compiling tower v0.4.13
+#17 13.79    Compiling tracing-opentelemetry v0.25.0
+#17 13.79    Compiling opentelemetry-stdout v0.5.0
+#17 15.21    Compiling hyper v1.11.1
+#17 15.90    Compiling hyper-util v0.1.20
+#17 16.58    Compiling hyper-timeout v0.5.2
+#17 16.58    Compiling axum v0.7.9
+#17 18.12    Compiling tonic v0.12.3
+#17 19.01    Compiling opentelemetry-proto v0.7.0
+#17 19.58    Compiling opentelemetry-otlp v0.17.0
+#17 19.85    Compiling shared v0.1.0 (/workspace/shared)
+#17 20.21    Compiling auth v0.1.0 (/workspace/services/auth)
+#17 20.25     Finished `release` profile [optimized] target(s) in 19.90s
+#17 DONE 20.5s
+
+#18 [builder 10/13] COPY services/auth/src ./services/auth/src
+#18 DONE 0.1s
+
+#19 [builder 11/13] COPY services/auth/migrations ./services/auth/migrations
+#19 DONE 0.0s
+
+#20 [builder 12/13] COPY shared/src ./shared/src
+#20 DONE 0.0s
+
+#21 [builder 13/13] RUN cargo build --release -p auth --locked
+#21 0.285     Finished `release` profile [optimized] target(s) in 0.11s
+#21 DONE 0.3s
+
+#22 [stage-1 4/4] COPY --from=builder /workspace/target/release/auth /app/auth
+#22 DONE 0.0s
+
+#23 exporting to image
+#23 exporting layers
+#23 exporting layers 0.3s done
+#23 exporting manifest sha256:e4c7e61e7255f855b395a8429783e7cb546b63f27cb1e75689e5b9b86cb91906 0.0s done
+#23 exporting config sha256:f91aafb5a9eddea60463b3221cef9b0b0a7c9bac9cd06a1babfb7665d176a201 0.0s done
+#23 exporting attestation manifest sha256:d92517b26c7f4e8031ff361f5fe3537e7f17685ce62083dd3081db0271d6c09b 0.0s done
+#23 exporting manifest list sha256:05402780d47587168616867b2c64a93c8cd5a083cf216e8be7ad1fcf83658ab4 0.0s done
+#23 naming to docker.io/library/maya-auth:latest done
+#23 unpacking to docker.io/library/maya-auth:latest 0.1s done
+#23 DONE 0.5s

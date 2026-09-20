@@ -4,9 +4,8 @@ use axum::{
     middleware::Next,
     response::Response,
 };
-use jsonwebtoken::{DecodingKey, Validation, decode};
-use serde::{Deserialize, Serialize};
-use std::sync::Arc;
+//use jsonwebtoken::{DecodingKey, Validation, decode};
+//use serde::{Deserialize, Serialize};
 use tracing::{error, info, warn};
 use crate::auth::AuthService;
 

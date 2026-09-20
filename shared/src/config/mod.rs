@@ -20,7 +20,6 @@ impl Config {
         Ok(Config {
             environment: std::env::var("ENVIRONMENT").unwrap_or_else(|_| "development".to_string()),
             cors_origin: std::env::var("CORS_ORIGIN").unwrap_or_else(|_| "*".to_string()),
-            // ВАЖНО: используем имя сервиса в Docker, а не localhost!
             otel_endpoint: std::env::var("OTEL_ENDPOINT")
                 .unwrap_or_else(|_| "http://openobserve:5081".to_string()),
             otel_user: std::env::var("ZO_ROOT_USER_EMAIL")
@@ -30,7 +29,7 @@ impl Config {
             jwt_secret: std::env::var("JWT_SECRET")
                 .map_err(|_| anyhow::anyhow!("JWT_SECRET must be set"))?,
             auth_service_url: std::env::var("AUTH_SERVICE_URL")
-                .unwrap_or_else(|_| "http://auth-service:50051".to_string()),
+                .unwrap_or_else(|_| "http://auth:50051".to_string()),
             web_api_service_url: std::env::var("WEB_API_SERVICE_URL")
                 .unwrap_or_else(|_| "http://web-api:50052".to_string()),
         })
