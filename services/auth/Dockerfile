@@ -9,17 +9,15 @@ COPY services/api-gateway/Cargo.toml ./services/api-gateway/
 COPY services/auth/Cargo.toml ./services/auth/
 COPY shared/Cargo.toml ./shared/
 
+COPY shared/src ./shared/src
+
 # Создаем заглушки
 RUN mkdir -p services/web-api/src && \
     echo "fn main() {}" > services/web-api/src/main.rs && \
     mkdir -p services/api-gateway/src && \
     echo "fn main() {}" > services/api-gateway/src/main.rs && \
     mkdir -p services/auth/src && \
-    echo "fn main() {}" > services/auth/src/main.rs && \
-
-# Реальный код shared кладём ДО первой сборки,
-# чтобы он не зависел от fingerprint stub-сборки
-COPY shared/src ./shared/src
+    echo "fn main() {}" > services/auth/src/main.rs
 
 # Собираем с --locked для точных версий
 RUN cargo build --release -p auth --locked

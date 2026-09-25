@@ -20,7 +20,7 @@ use opentelemetry_semantic_conventions::{
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    println!("Auth start");
+    println!("Service auth start");
     std::panic::set_hook(Box::new(|info| {
         eprintln!("PANIC: {info}");
     }));
@@ -38,7 +38,7 @@ async fn main() -> Result<()> {
     let _guard = init_telemetry(&config, resource(), log_filter)?;
 
     info!(
-        "Auth service starting, Port: 8080, Environment: {}",
+        "Service auth starting, Port: 8080, Environment: {}",
         config.environment
     );
 
@@ -73,7 +73,7 @@ async fn main() -> Result<()> {
 
     // 8. Запускаем сервер
     let addr = "0.0.0.0:8080";
-    info!("Auth http server listening on http://{}", addr);
+    info!("Http server auth listening on http://{}", addr);
     info!("Press Ctrl+C to stop");
 
     let listener = tokio::net::TcpListener::bind(&addr).await?;
@@ -85,9 +85,9 @@ async fn main() -> Result<()> {
     tokio::select! {
         result = server_task => {
             match result {
-                Ok(Ok(_)) => info!("Server stopped normally"),
-                Ok(Err(e)) => error!("Server error: {}", e),
-                Err(e) => error!("Server task error: {}", e),
+                Ok(Ok(_)) => info!("Http server auth stopped normally"),
+                Ok(Err(e)) => error!("Http server auth error: {}", e),
+                Err(e) => error!("Http server auth task error: {}", e),
             }
         }
         _ = tokio::signal::ctrl_c() => {
@@ -95,7 +95,7 @@ async fn main() -> Result<()> {
         }
     }
 
-    info!("Service stopped");
+    info!("Service auth stopped");
     Ok(())
 }
 
