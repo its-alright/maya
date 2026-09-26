@@ -12,16 +12,15 @@ use tracing_subscriber::EnvFilter;
 
 use opentelemetry::KeyValue;
 use opentelemetry_sdk::Resource;
-use opentelemetry_semantic_conventions::{
-    SCHEMA_URL,
-    resource::{DEPLOYMENT_ENVIRONMENT, SERVICE_NAME, SERVICE_VERSION},
+use opentelemetry_semantic_conventions::resource::{
+    DEPLOYMENT_ENVIRONMENT_NAME, SERVICE_NAME, SERVICE_VERSION,
 };
 use shared::config::Config;
 use shared::middleware::metrics::MetricsMiddleware;
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    println!("Service api-gateway start");
+    println!("Service start");
     std::panic::set_hook(Box::new(|info| {
         eprintln!("PANIC: {info}");
     }));
@@ -36,7 +35,20 @@ async fn main() -> Result<()> {
     let log_filter = EnvFilter::try_from_default_env()
         .unwrap_or_else(|_| EnvFilter::new("api-gateway=info,tower_http=info,info"));
 
-    let _guard = shared::otel::init_telemetry(&config, resource(), log_filter)?;
+    eprintln!("DEBUG: before init_telemetry");
+
+    let _guard = match shared::otel::init_telemetry(&config, resource(), log_filter) {
+        Ok(g) => {
+            eprintln!("DEBUG: init_telemetry OK");
+            g
+        }
+        Err(e) => {
+            eprintln!("DEBUG: init_telemetry FAILED: {e:#}");
+            return Ok(()); // или std::process::exit(1)
+        }
+    };
+
+    eprintln!("DEBUG: after init_telemetry");
 
     info!(
         "Service api-gateway starting, Port: 8080, Environment: {}",
@@ -74,7 +86,7 @@ async fn main() -> Result<()> {
 
     // 8. Запускаем сервер
     let addr = "0.0.0.0:8080";
-    info!("Http server api-gateway listening on http://{}", addr);
+    info!("Http server listening on {}", addr);
     info!("Press Ctrl+C to stop");
 
     let listener = tokio::net::TcpListener::bind(&addr).await?;
@@ -86,9 +98,9 @@ async fn main() -> Result<()> {
     tokio::select! {
         result = server_task => {
             match result {
-                Ok(Ok(_)) => info!("Http server api-gateway stopped normally"),
-                Ok(Err(e)) => error!("Http server api-gateway error: {}", e),
-                Err(e) => error!("Http server api-gateway task error: {}", e),
+                Ok(Ok(_)) => info!("Http server stopped normally"),
+                Ok(Err(e)) => error!("Http server error: {}", e),
+                Err(e) => error!("Http server task error: {}", e),
             }
         }
         _ = tokio::signal::ctrl_c() => {
@@ -101,12 +113,12 @@ async fn main() -> Result<()> {
 }
 
 fn resource() -> Resource {
-    Resource::from_schema_url(
-        [
+    Resource::builder()
+        .with_service_name(env!("CARGO_PKG_NAME"))
+        .with_attributes([
             KeyValue::new(SERVICE_NAME, env!("CARGO_PKG_NAME")),
             KeyValue::new(SERVICE_VERSION, env!("CARGO_PKG_VERSION")),
-            KeyValue::new(DEPLOYMENT_ENVIRONMENT, "develop"),
-        ],
-        SCHEMA_URL,
-    )
+            KeyValue::new(DEPLOYMENT_ENVIRONMENT_NAME, "develop"),
+        ])
+        .build()
 }

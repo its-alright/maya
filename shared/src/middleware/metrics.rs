@@ -17,15 +17,15 @@ impl MetricsMiddleware {
             request_counter: meter
                 .u64_counter("http_requests_total")
                 .with_description("Total HTTP requests")
-                .init(),
+                .build(),
             error_counter: meter
                 .u64_counter("http_errors_total")
                 .with_description("Total HTTP errors")
-                .init(),
+                .build(),
             duration_histogram: meter
                 .f64_histogram("http_request_duration_seconds")
                 .with_description("HTTP request duration")
-                .init(),
+                .build(),
         }
     }
 

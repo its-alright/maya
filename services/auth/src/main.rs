@@ -1,11 +1,11 @@
 #![allow(dead_code)]
 
-mod routes;
+mod handlers;
 
 use anyhow::Result;
 use axum::{Router, http::HeaderValue};
 use dotenvy::dotenv;
-use shared::{config::Config, middleware::metrics::MetricsMiddleware, otel::init_telemetry};
+use shared::{config::Config, middleware::metrics::MetricsMiddleware};
 use std::sync::Arc;
 use tower_http::cors::CorsLayer;
 use tracing::{error, info};
@@ -13,14 +13,13 @@ use tracing_subscriber::EnvFilter;
 
 use opentelemetry::KeyValue;
 use opentelemetry_sdk::Resource;
-use opentelemetry_semantic_conventions::{
-    SCHEMA_URL,
-    resource::{DEPLOYMENT_ENVIRONMENT, SERVICE_NAME, SERVICE_VERSION},
+use opentelemetry_semantic_conventions::resource::{
+    DEPLOYMENT_ENVIRONMENT_NAME, SERVICE_NAME, SERVICE_VERSION,
 };
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    println!("Service auth start");
+    println!("Service start");
     std::panic::set_hook(Box::new(|info| {
         eprintln!("PANIC: {info}");
     }));
@@ -35,7 +34,20 @@ async fn main() -> Result<()> {
     let log_filter = EnvFilter::try_from_default_env()
         .unwrap_or_else(|_| EnvFilter::new("auth=info,tower_http=info,info"));
 
-    let _guard = init_telemetry(&config, resource(), log_filter)?;
+    eprintln!("DEBUG: before init_telemetry");
+
+    let _guard = match shared::otel::init_telemetry(&config, resource(), log_filter) {
+        Ok(g) => {
+            eprintln!("DEBUG: init_telemetry OK");
+            g
+        }
+        Err(e) => {
+            eprintln!("DEBUG: init_telemetry FAILED: {e:#}");
+            return Ok(()); // или std::process::exit(1)
+        }
+    };
+
+    eprintln!("DEBUG: after init_telemetry");
 
     info!(
         "Service auth starting, Port: 8080, Environment: {}",
@@ -46,21 +58,21 @@ async fn main() -> Result<()> {
     let cors = CorsLayer::new()
         .allow_origin(config.cors_origin.parse::<HeaderValue>()?)
         .allow_methods([
-            axum::http::Method::GET,
-            axum::http::Method::POST,
-            axum::http::Method::PUT,
-            axum::http::Method::DELETE,
+            http::Method::GET,
+            http::Method::POST,
+            http::Method::PUT,
+            http::Method::DELETE,
         ])
         .allow_headers(vec![
-            axum::http::header::AUTHORIZATION,
-            axum::http::header::CONTENT_TYPE,
+            http::header::AUTHORIZATION,
+            http::header::CONTENT_TYPE,
         ]);
 
     // 7. Создаем роутер с метриками
     let metrics_middleware = Arc::new(MetricsMiddleware::new());
 
     let app = Router::new()
-        .nest("/api", routes::create_routes())
+        .nest("/api", handlers::create_routes())
         .layer(cors)
         .layer(tower_http::trace::TraceLayer::new_for_http())
         .layer(axum::middleware::from_fn({
@@ -73,7 +85,7 @@ async fn main() -> Result<()> {
 
     // 8. Запускаем сервер
     let addr = "0.0.0.0:8080";
-    info!("Http server auth listening on http://{}", addr);
+    info!("Http server auth listening on {}", addr);
     info!("Press Ctrl+C to stop");
 
     let listener = tokio::net::TcpListener::bind(&addr).await?;
@@ -100,12 +112,12 @@ async fn main() -> Result<()> {
 }
 
 fn resource() -> Resource {
-    Resource::from_schema_url(
-        [
+    Resource::builder()
+        .with_service_name(env!("CARGO_PKG_NAME"))
+        .with_attributes([
             KeyValue::new(SERVICE_NAME, env!("CARGO_PKG_NAME")),
             KeyValue::new(SERVICE_VERSION, env!("CARGO_PKG_VERSION")),
-            KeyValue::new(DEPLOYMENT_ENVIRONMENT, "develop"),
-        ],
-        SCHEMA_URL,
-    )
+            KeyValue::new(DEPLOYMENT_ENVIRONMENT_NAME, "develop"),
+        ])
+        .build()
 }

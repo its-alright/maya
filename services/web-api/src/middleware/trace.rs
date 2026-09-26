@@ -5,8 +5,8 @@ use tracing_opentelemetry::OpenTelemetrySpanExt;
 
 pub async fn extract_trace_context(req: Request, next: Next) -> Response {
     // Извлекаем заголовок traceparent
-    if let Some(traceparent) = req.headers().get("traceparent") {
-        if let Ok(tp_str) = traceparent.to_str() {
+    if let Some(trace_parent) = req.headers().get("traceparent") {
+        if let Ok(tp_str) = trace_parent.to_str() {
             info!("Web API traceparent:{}", tp_str);
             // Парсим W3C Trace Context: 00-{trace_id}-{span_id}-{flags}
             let parts: Vec<&str> = tp_str.split('-').collect();
@@ -31,7 +31,8 @@ pub async fn extract_trace_context(req: Request, next: Next) -> Response {
 
                 // Создаем span с родительским контекстом
                 let span = info_span!("web_api_request");
-                span.set_parent(parent_context);
+                span.set_parent(parent_context)
+                    .expect("Failed to set parent context");
                 let _guard = span.enter();
 
                 return next.run(req).await;
