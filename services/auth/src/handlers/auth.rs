@@ -1,18 +1,19 @@
+use crate::handlers::state::AppState;
 use axum::response::IntoResponse;
 use axum::{
     Router,
     routing::{get, post},
 };
-use http::HeaderMap;
+use shared::auth::user::AuthUser;
 
-pub fn create_routes() -> Router {
+pub fn create_routes(state: AppState) -> Router {
     Router::new()
         .route("/auth/login", post(login))
         .route("/auth/register", post(register))
         .route("/auth/me", get(get_user))
-    //.with_state(config)
+        .with_state(state)
 }
 
-async fn login(headers: HeaderMap) -> impl IntoResponse {}
-async fn register(headers: HeaderMap) -> impl IntoResponse {}
-async fn get_user(headers: HeaderMap) -> impl IntoResponse {}
+async fn login() -> impl IntoResponse {}
+async fn register() -> impl IntoResponse {}
+async fn get_user(user: AuthUser) -> impl IntoResponse {}

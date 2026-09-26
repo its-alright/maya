@@ -6,8 +6,8 @@ use axum::{
 };
 //use jsonwebtoken::{DecodingKey, Validation, decode};
 //use serde::{Deserialize, Serialize};
+use crate::auth::service::AuthService;
 use tracing::{error, info, warn};
-use crate::auth::AuthService;
 
 pub async fn auth_middleware(
     headers: HeaderMap,

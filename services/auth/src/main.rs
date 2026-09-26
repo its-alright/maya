@@ -1,6 +1,9 @@
 #![allow(dead_code)]
 
 mod handlers;
+mod models;
+mod repository;
+mod services;
 
 use anyhow::Result;
 use axum::{Router, http::HeaderValue};
@@ -11,6 +14,7 @@ use tower_http::cors::CorsLayer;
 use tracing::{error, info};
 use tracing_subscriber::EnvFilter;
 
+use crate::handlers::state::AppState;
 use opentelemetry::KeyValue;
 use opentelemetry_sdk::Resource;
 use opentelemetry_semantic_conventions::resource::{
@@ -68,11 +72,29 @@ async fn main() -> Result<()> {
             http::header::CONTENT_TYPE,
         ]);
 
+    info!("Connecting to database");
+    let pool = repository::create_pool(&config.database_url).await?;
+
+    info!("Run migrations");
+
+    sqlx::migrate!()
+        .run(&pool)
+        .await
+        .expect("Failed to run migrations for service-a");
+
+    info!("Database initialized successfully");
+
+    let repo = repository::users_repo::UsersRepository::new(pool);
+    let users_service = Arc::new(services::users::UsersService::new(repo));
+
     // 7. Создаем роутер с метриками
     let metrics_middleware = Arc::new(MetricsMiddleware::new());
 
+    let cfg = Arc::new(config);
+    let app_state: handlers::state::AppState = AppState::new(cfg, users_service);
+
     let app = Router::new()
-        .nest("/api", handlers::create_routes())
+        .nest("/api", handlers::create_routes(app_state))
         .layer(cors)
         .layer(tower_http::trace::TraceLayer::new_for_http())
         .layer(axum::middleware::from_fn({

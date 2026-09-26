@@ -5,12 +5,21 @@ edition = "2024"
 
 [dependencies]
 shared = { path = "../../shared" }
-tokio = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
 dotenvy = { workspace = true }
 thiserror = { workspace = true }
 anyhow = { workspace = true }
+
+#common
+uuid = { workspace = true }
+chrono = { workspace = true }
+
+#runtime
+tokio = { workspace = true }
+
+#db
+sqlx = { workspace = true }
 
 #http
 axum = { workspace = true }

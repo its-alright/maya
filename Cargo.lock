@@ -105,6 +105,7 @@ dependencies = [
  "anyhow",
  "axum 0.7.9",
  "base64 0.22.1",
+ "chrono",
  "dotenvy",
  "http",
  "jsonwebtoken",
@@ -118,6 +119,7 @@ dependencies = [
  "serde",
  "serde_json",
  "shared",
+ "sqlx",
  "thiserror 1.0.69",
  "tokio",
  "tonic",
@@ -126,6 +128,7 @@ dependencies = [
  "tracing",
  "tracing-opentelemetry",
  "tracing-subscriber",
+ "uuid",
 ]
 
 [[package]]
@@ -2312,6 +2315,7 @@ name = "shared"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "async-trait",
  "axum 0.7.9",
  "base64 0.22.1",
  "jsonwebtoken",
@@ -2322,12 +2326,14 @@ dependencies = [
  "opentelemetry-stdout",
  "opentelemetry_sdk",
  "serde",
+ "serde_json",
  "thiserror 1.0.69",
  "tokio",
  "tonic",
  "tracing",
  "tracing-opentelemetry",
  "tracing-subscriber",
+ "uuid",
 ]
 
 [[package]]
