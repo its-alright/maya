@@ -26,7 +26,7 @@ RUN cargo build --release -p api-gateway --locked
 COPY services/api-gateway/src ./services/api-gateway/src
 
 # Пересобираем
-RUN rm -f target/release/api-gateway target/release/deps/api-gateway-*
+RUN rm -f target/release/api-gateway target/release/deps/api_gateway-*
 RUN cargo build --release -p api-gateway --locked
 
 FROM debian:bookworm-slim

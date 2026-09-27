@@ -51,8 +51,8 @@ services:
       CORS_ORIGIN: "*"
       OTEL_ENDPOINT: ${OTEL_ENDPOINT:-http://openobserve:5081}
       JWT_SECRET: ${JWT_SECRET:-change_this_secret_in_production}
-      AUTH_SERVICE_URL: ${AUTH_SERVICE_URL:-http://auth:50051}
-      WEB_API_SERVICE_URL: ${WEB_API_SERVICE_URL:-http://web-api:50052}
+      AUTH_SERVICE_URL: ${AUTH_SERVICE_URL:-http://auth:8080}
+      WEB_API_SERVICE_URL: ${WEB_API_SERVICE_URL:-http://web-api:8080}
     ports:
       - "50050:8080"
     networks:
