@@ -64,6 +64,7 @@ async fn main() -> Result<()> {
     info!("Run migrations");
 
     sqlx::migrate!()
+        .set_ignore_missing(true)
         .run(&pool)
         .await
         .expect("Failed to run migrations for service-a");

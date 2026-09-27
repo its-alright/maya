@@ -24,6 +24,7 @@ COPY services/web-api/src ./services/web-api/src
 COPY services/web-api/migrations ./services/web-api/migrations
 
 # Пересобираем
+RUN rm -f target/release/web-api target/release/deps/web-api-*
 RUN cargo build --release -p web-api --locked
 
 FROM debian:bookworm-slim

@@ -5,6 +5,7 @@
 ### Migrations
 Добавление миграции
 ```rust
+cd {service_folder}
 sqlx migrate add create_users_table
 ```
 

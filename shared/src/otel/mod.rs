@@ -81,11 +81,6 @@ pub fn init_telemetry(
 
     let meter_provider = init_meter_provider(metric_exporter, resource.clone())?;
 
-    // let meter_provider = SdkMeterProvider::builder()
-    //     .with_resource(resource.clone())
-    //     .with_periodic_exporter(metric_exporter)
-    //     .build();
-
     // 3. Устанавливаем глобальные провайдеры
     global::set_tracer_provider(tracer_provider.clone());
     global::set_meter_provider(meter_provider.clone());
@@ -140,13 +135,7 @@ fn init_meter_provider(
                         record_min_max: true,
                     })
                     .build()
-                    .unwrap(), // Stream::new().aggregation(Aggregation::ExplicitBucketHistogram {
-                               //     boundaries: vec![
-                               //         0.0005, 0.001, 0.002, 0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1.0, 2.5,
-                               //         5.0, 10.0,
-                               //     ],
-                               //     record_min_max: true,
-                               // }),
+                    .expect("Unable to build stream"),
             )
         } else {
             None

@@ -5,6 +5,7 @@ use axum::{
     routing::{get, post},
 };
 use shared::auth::user::AuthUser;
+use tracing::info;
 
 pub fn create_routes(state: AppState) -> Router {
     Router::new()
@@ -16,4 +17,8 @@ pub fn create_routes(state: AppState) -> Router {
 
 async fn login() -> impl IntoResponse {}
 async fn register() -> impl IntoResponse {}
-async fn get_user(user: AuthUser) -> impl IntoResponse {}
+
+#[tracing::instrument(skip(user))]
+async fn get_user(user: AuthUser) -> impl IntoResponse {
+    info!("user founded: {}", user.id);
+}

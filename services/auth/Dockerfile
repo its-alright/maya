@@ -27,6 +27,7 @@ COPY services/auth/src ./services/auth/src
 COPY services/auth/migrations ./services/auth/migrations
 
 # Пересобираем
+RUN rm -f target/release/auth target/release/deps/auth-*
 RUN cargo build --release -p auth --locked
 
 FROM debian:bookworm-slim
