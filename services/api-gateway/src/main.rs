@@ -1,6 +1,6 @@
 #![allow(dead_code)]
 
-mod routes;
+mod handlers;
 
 use anyhow::Result;
 use axum::{Router, http::HeaderValue};
@@ -51,7 +51,7 @@ async fn main() -> Result<()> {
     eprintln!("DEBUG: after init_telemetry");
 
     info!(
-        "Service api-gateway starting, Port: 8080, Environment: {}",
+        "Service starting, Port: 8080, Environment: {}",
         config.environment
     );
 
@@ -73,7 +73,7 @@ async fn main() -> Result<()> {
     let metrics_middleware = Arc::new(MetricsMiddleware::new());
 
     let app = Router::new()
-        .nest("/api", routes::create_routes(config.clone()))
+        .nest("/api", handlers::create_routes(config.clone()))
         .layer(cors)
         .layer(tower_http::trace::TraceLayer::new_for_http())
         .layer(axum::middleware::from_fn({
@@ -108,7 +108,7 @@ async fn main() -> Result<()> {
         }
     }
 
-    info!("Service api-gateway stopped");
+    info!("Service stopped");
     Ok(())
 }
 
