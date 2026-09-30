@@ -47,17 +47,35 @@ services:
       - .env
     container_name: api-gateway
     environment:
-      GATEWAY_PORT: 50050
       ENVIRONMENT: development
       CORS_ORIGIN: "*"
-      OTEL_ENDPOINT: ${OTEL_ENDPOINT:-http://localhost:5081}
+      OTEL_ENDPOINT: ${OTEL_ENDPOINT:-http://openobserve:5081}
       JWT_SECRET: ${JWT_SECRET:-change_this_secret_in_production}
-      AUTH_SERVICE_URL: http://auth-service:50051
-      WEB_API_SERVICE_URL: ${WEB_API_SERVICE_URL:-http://web-api:50052}
-      RATE_LIMIT_REQUESTS: 100
-      RATE_LIMIT_PERIOD_SECS: 60
+      AUTH_SERVICE_URL: ${AUTH_SERVICE_URL:-http://auth:8080}
+      WEB_API_SERVICE_URL: ${WEB_API_SERVICE_URL:-http://web-api:8080}
     ports:
-      - "50050:50050"
+      - "50050:8080"
+    networks:
+      - microservices-network
+
+  auth:
+    build:
+      context: .
+      dockerfile: services/auth/Dockerfile
+    env_file:
+      - .env
+    container_name: auth
+    environment:
+      ENVIRONMENT: development
+      DATABASE_URL: ${DATABASE_URL:-postgres://dbhost:dbuser@postgres:5432/dbname}
+      OTEL_ENDPOINT: ${OTEL_ENDPOINT:-http://openobserve:5081}
+      JWT_SECRET: ${JWT_SECRET:-change_this_secret_in_production}
+      JWT_EXPIRATION_HOURS: 24
+    ports:
+      - "50051:50051"
+    depends_on:
+      postgres:
+        condition: service_healthy
     networks:
       - microservices-network
 
@@ -69,15 +87,19 @@ services:
       - .env
     container_name: web-api
     environment:
-      WEB_API_PORT: 50052
       ENVIRONMENT: development
       DATABASE_URL: ${DATABASE_URL:-postgres://dbhost:dbuser@postgres:5432/dbname}
-      OTEL_ENDPOINT: ${OTEL_ENDPOINT:-http://localhost:5081}
+      OTEL_ENDPOINT: ${OTEL_ENDPOINT:-http://openobserve:5081}
       JWT_SECRET: ${JWT_SECRET:-change_this_secret_in_production}
     ports:
-      - "50052:50052"
+      - "50052:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
     networks:
       - microservices-network
+
+
 
 volumes:
   maya_postgres_data:

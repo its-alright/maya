@@ -14,5 +14,16 @@ sum by (method, path) (rate(http_errors_total[$__rate_interval]))
 percentile
 histogram_quantile(1.0, _bucket{})
 histogram_quantile(0.99, sum(rate(_bucket[$__rate_interval])) by (le, method, path)) * 1000
+
+p.50={method}{path}
+histogram_quantile(0.5, sum by (le,method,path) (rate(http_request_duration_seconds_bucket{}[$__rate_interval])))
+
+p.90={method}{path}
+histogram_quantile(0.90, sum by (le,method,path) (rate(http_request_duration_seconds_bucket{}[$__rate_interval])))
+
+p.95={method}{path}
+histogram_quantile(0.95, sum by (le,method,path) (rate(http_request_duration_seconds_bucket{}[$__rate_interval])))
+
 p.99={method}{path}
+histogram_quantile(0.99, sum by (le,method,path) (rate(http_request_duration_seconds_bucket{}[$__rate_interval])))
 ```

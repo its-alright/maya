@@ -3,7 +3,6 @@ use serde::Deserialize;
 
 #[derive(Clone, Deserialize)]
 pub struct Config {
-    pub port: u16,
     pub environment: String,
     pub database_url: String,
     pub otel_endpoint: String,
@@ -16,9 +15,6 @@ pub struct Config {
 impl Config {
     pub fn from_env() -> Result<Self> {
         Ok(Config {
-            port: std::env::var("WEB_API_PORT")
-                .unwrap_or_else(|_| "50052".to_string())
-                .parse()?,
             environment: std::env::var("ENVIRONMENT").unwrap_or_else(|_| "development".to_string()),
             database_url: std::env::var("DATABASE_URL")
                 .map_err(|_| anyhow::anyhow!("DATABASE_URL must be set"))?,

@@ -1,0 +1,22 @@
+# Rust build artifacts — самое важное
+target/
+**/target/
+
+# Git
+.git/
+.gitignore
+
+# Docker
+Dockerfile
+**/Dockerfile
+docker-compose*.yml
+.dockerignore
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# Docs и прочее, что не нужно в образе
+*.md
+LICENSE

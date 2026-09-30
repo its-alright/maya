@@ -4,6 +4,7 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+shared = { path = "../../shared" }
 once_cell = { workspace = true }
 hex = { workspace = true }
 tokio = { workspace = true }
@@ -33,6 +34,7 @@ opentelemetry-otlp = { workspace = true }
 opentelemetry-stdout = { workspace = true }
 opentelemetry_sdk = { workspace = true }
 opentelemetry-semantic-conventions = { workspace = true }
+#opentelemetry-appender-tracing = { workspace = true }
 opentelemetry-prometheus = { workspace = true }
 prometheus = { workspace = true }
 

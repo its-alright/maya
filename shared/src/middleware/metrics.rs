@@ -1,9 +1,5 @@
-use axum::{
-    extract::Request,
-    middleware::Next,
-    response::Response,
-};
-use opentelemetry::{global, KeyValue};
+use axum::{extract::Request, middleware::Next, response::Response};
+use opentelemetry::{KeyValue, global};
 use std::time::Instant;
 use tracing::info;
 
@@ -15,21 +11,21 @@ pub struct MetricsMiddleware {
 
 impl MetricsMiddleware {
     pub fn new() -> Self {
-        let meter = global::meter("web-api");
+        let meter = global::meter("auth");
 
         Self {
             request_counter: meter
                 .u64_counter("http_requests_total")
                 .with_description("Total HTTP requests")
-                .init(),
+                .build(),
             error_counter: meter
                 .u64_counter("http_errors_total")
                 .with_description("Total HTTP errors")
-                .init(),
+                .build(),
             duration_histogram: meter
                 .f64_histogram("http_request_duration_seconds")
                 .with_description("HTTP request duration")
-                .init(),
+                .build(),
         }
     }
 
@@ -50,7 +46,14 @@ impl MetricsMiddleware {
             KeyValue::new("method", method),
             KeyValue::new("path", path),
             KeyValue::new("status_code", status_code.to_string()),
-            KeyValue::new("status_type", if status_code >= 500 { "error" } else { "success" }),
+            KeyValue::new(
+                "status_type",
+                if status_code >= 500 {
+                    "error"
+                } else {
+                    "success"
+                },
+            ),
         ];
 
         self.request_counter.add(1, &attributes);

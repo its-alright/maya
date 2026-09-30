@@ -20,15 +20,15 @@ RUN mkdir -p services/web-api/src && \
     echo "fn main() {}" > services/auth/src/main.rs
 
 # Собираем с --locked для точных версий
-RUN cargo build --release -p web-api --locked
+RUN cargo build --release -p auth --locked
 
 # src + migrations
-COPY services/web-api/src ./services/web-api/src
-COPY services/web-api/migrations ./services/web-api/migrations
+COPY services/auth/src ./services/auth/src
+COPY services/auth/migrations ./services/auth/migrations
 
 # Пересобираем
-RUN rm -f target/release/web-api target/release/deps/web_api-*
-RUN cargo build --release -p web-api --locked
+RUN rm -f target/release/auth target/release/deps/auth-*
+RUN cargo build --release -p auth --locked
 
 FROM debian:bookworm-slim
 
@@ -37,8 +37,8 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
-COPY --from=builder /workspace/target/release/web-api /app/web-api
+COPY --from=builder /workspace/target/release/auth /app/auth
 
 EXPOSE 8080
 
-CMD ["/app/web-api"]
+CMD ["/app/auth"]

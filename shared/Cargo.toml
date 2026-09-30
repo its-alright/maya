@@ -1,0 +1,42 @@
+[package]
+name = "shared"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+#common
+uuid = { workspace = true }
+serde_json = { workspace = true }
+async-trait = { workspace = true }
+
+#http
+axum = { workspace = true }
+jsonwebtoken = { workspace = true }
+serde = { workspace = true }
+
+#errors
+thiserror = { workspace = true }
+anyhow = { workspace = true }
+
+#tracing
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+tracing-opentelemetry = { workspace = true }
+
+#otel
+opentelemetry = { workspace = true }
+opentelemetry-otlp = { workspace = true }
+opentelemetry-stdout = { workspace = true }
+opentelemetry_sdk = { workspace = true }
+opentelemetry-appender-tracing = { workspace = true }
+opentelemetry-semantic-conventions = { workspace = true }
+
+tokio = { workspace = true }
+#serde = { workspace = true }
+
+#wire
+tonic = { workspace = true }
+
+#utils
+base64 = { workspace = true }
+

@@ -3,30 +3,28 @@ use serde::Deserialize;
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct Config {
-    pub port: u16,
     pub environment: String,
+    pub database_url: String,
     pub cors_origin: String,
     pub otel_endpoint: String,
     pub otel_user: String,
     pub otel_password: String,
     pub jwt_secret: String,
+    //TODO: move / extend
+    //api-gateway
     pub auth_service_url: String,
     pub web_api_service_url: String,
-    pub rate_limit_requests: u32,
-    pub rate_limit_period_secs: u64,
 }
 
 impl Config {
     pub fn from_env() -> Result<Self> {
         Ok(Config {
-            port: std::env::var("GATEWAY_PORT")
-                .unwrap_or_else(|_| "50050".to_string())
-                .parse()?,
             environment: std::env::var("ENVIRONMENT").unwrap_or_else(|_| "development".to_string()),
+            database_url: std::env::var("DATABASE_URL")
+                .map_err(|_| anyhow::anyhow!("DATABASE_URL must be set"))?,
             cors_origin: std::env::var("CORS_ORIGIN").unwrap_or_else(|_| "*".to_string()),
-            // ВАЖНО: используем имя сервиса в Docker, а не localhost!
             otel_endpoint: std::env::var("OTEL_ENDPOINT")
-                .unwrap_or_else(|_| "http://openobserve:5081".to_string()),
+                .map_err(|_| anyhow::anyhow!("OTEL_ENDPOINT must be set"))?,
             otel_user: std::env::var("ZO_ROOT_USER_EMAIL")
                 .map_err(|_| anyhow::anyhow!("ZO_ROOT_USER_EMAIL must be set"))?,
             otel_password: std::env::var("ZO_ROOT_USER_PASSWORD")
@@ -34,15 +32,9 @@ impl Config {
             jwt_secret: std::env::var("JWT_SECRET")
                 .map_err(|_| anyhow::anyhow!("JWT_SECRET must be set"))?,
             auth_service_url: std::env::var("AUTH_SERVICE_URL")
-                .unwrap_or_else(|_| "http://auth-service:50051".to_string()),
+                .map_err(|_| anyhow::anyhow!("AUTH_SERVICE_URL must be set"))?,
             web_api_service_url: std::env::var("WEB_API_SERVICE_URL")
-                .unwrap_or_else(|_| "http://web-api:50052".to_string()),
-            rate_limit_requests: std::env::var("RATE_LIMIT_REQUESTS")
-                .unwrap_or_else(|_| "100".to_string())
-                .parse()?,
-            rate_limit_period_secs: std::env::var("RATE_LIMIT_PERIOD_SECS")
-                .unwrap_or_else(|_| "60".to_string())
-                .parse()?,
+                .map_err(|_| anyhow::anyhow!("WEB_API_SERVICE_URL must be set"))?,
         })
     }
 }
